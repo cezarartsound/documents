@@ -29,6 +29,8 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
+#include "libFabio/input/input.h"
+
 #include "GPS/GPS.h"
 
 #include "libFB-0.2.4/FBlib.h"
@@ -294,12 +296,14 @@ void wait_input(){
 				appExit = true;
 				break;
 			case '+':
-				meters = RoadView_ZoomIn();
+				meters -= 20;
+				RoadView_add_meters_visible(meters);
 				sprintf(status,"Zoom in (range: %d m).", METERS_VISIBLE+meters);
 				cor = FB_makecol(0,0,255,0);
 				break;
 			case '-':
-				meters = RoadView_ZoomOut();
+				meters += 20;
+				RoadView_add_meters_visible(meters);
 				sprintf(status,"Zoom out (range: %d m).", METERS_VISIBLE+meters);
 				cor = FB_makecol(0,0,255,0);
 				break;
@@ -370,7 +374,7 @@ int main (int argc, char **argv){
 	            break;
 	        case 'f':
 	        	filer = 0;
-	            sscanf(optarg, "%s", filename);
+	            sscanf(optarg, "%s\0", filename);
 	            break;
 	        case 'g':
 	        	serialr = 0;
@@ -407,6 +411,8 @@ int main (int argc, char **argv){
 	}else
 		printf("Graphics disable\n");
 	
+	input_init();
+	input_calibration();
 	RoadView_start();
 	
 	if(port != -1){

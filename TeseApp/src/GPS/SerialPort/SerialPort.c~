@@ -701,7 +701,7 @@ unsigned int Serialport_Read( Serialport * serialport, char* dataBuffer,
 		for(i=0; i<numOfBytes; ++i)
 			*(dataBuffer++) = sReadByte(serialport, msTimeout) ;
 	}
-	if((*(dataBuffer-1))==-1)return -1;
+	if((int)(*(dataBuffer-1))==-1)return -1;
 	return i;
 }
 

@@ -1,5 +1,4 @@
-PATH_CC = /opt/eldk-5.0/armv7a/sysroots/i686-oesdk-linux/usr/bin/armv7a-linux-gnueabi/
-CC = $(PATH_CC)arm-linux-gnueabi-gcc
+CC = gcc
 
 FLAGS =  -Wall -O2
 LIBS = 

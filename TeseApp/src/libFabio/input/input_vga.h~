@@ -1,0 +1,12 @@
+
+#include "../libFB-0.2.4/FBlib.h"
+
+#define VGA_fill(C) FB_clear_screen(C)
+#define VGA_rect(X1,Y1,X2,Y2,C) FB_rect(X1, Y1, X2, Y2, C)
+#define VGA_fill_rect(X1,Y1,X2,Y2,C) FB_rectfill(X1, Y1, X2, Y2, C)
+#define VGA_set_pixel(X,Y,C) FB_putpixel(X, Y, C)
+#define VGA_drawText(TEXT, X,Y,C) FB_printf(X, Y, C, TEXT)
+	
+
+
+

@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <jpeglib.h>
+#include <png.h>
 #include "FBlib.h"
 
 int i_;
@@ -92,7 +93,6 @@ BITMAP * BMPbitmapLoad(char * image_name){
 }
 
 BITMAP * JPEGbitmapLoad(char * image_name){
-	BITMAP * bmp = (BITMAP*)malloc(sizeof(BITMAP));
 	
 	struct jpeg_decompress_struct cinfo;
 	struct jpeg_error_mgr jerr;
@@ -109,8 +109,8 @@ BITMAP * JPEGbitmapLoad(char * image_name){
 
 	if((infile = fopen(image_name,"rb")) == NULL)
 	{
-		fprintf(stderr,"can't open %s\n",image_name);
-		exit(1);
+		printf("Error opening file %s.\n",image_name);
+		return 0;
 	}
 
 	jpeg_stdio_src(&cinfo, infile);
@@ -122,6 +122,9 @@ BITMAP * JPEGbitmapLoad(char * image_name){
 	buffer=(*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, cinfo.output_width*cinfo.output_components, 1);
 
 	i=cinfo.output_width*cinfo.output_components*sizeof(char);
+
+
+	BITMAP * bmp = (BITMAP*)malloc(sizeof(BITMAP));
 
 	bmp->width = cinfo.output_width;
 	bmp->height = cinfo.output_height;	
@@ -158,12 +161,129 @@ BITMAP * JPEGbitmapLoad(char * image_name){
 	return bmp;
 }
 
+BITMAP * PNGbitmapLoad(char * image_name){
+
+
+	int x, y;
+
+	int width, height;
+
+	png_structp png_ptr;
+	png_infop info_ptr;
+	png_bytep * row_pointers;
+
+	char header[8];    // 8 is the maximum size that can be checked
+
+	/* open file and test for it being a png */
+	FILE *fp = fopen(image_name, "rb");
+	if (!fp){
+		printf("Error opening file %s.\n",image_name);
+		return 0;
+	}
+	fread(header, 1, 8, fp);
+	if (png_sig_cmp((png_const_bytep) header, 0, 8)){
+		printf("%s is not a png file.\n",image_name);
+		fclose(fp);
+		return 0;
+	}
+
+	// initialize stuff 
+	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+	if (!png_ptr){
+		printf("%s is not a png file.\n",image_name);
+		fclose(fp);
+		return 0;
+	}
+
+	info_ptr = png_create_info_struct(png_ptr);
+	if (!info_ptr){
+		printf("%s is not a png file.\n",image_name);
+		fclose(fp);
+		return 0;
+	}
+
+	if (setjmp(png_jmpbuf(png_ptr))){
+		printf("%s is not a png file.\n",image_name);
+		fclose(fp);
+		return 0;
+	}
+
+	png_init_io(png_ptr, fp);
+	png_set_sig_bytes(png_ptr, 8);
+
+	png_read_info(png_ptr, info_ptr);
+
+	width = png_get_image_width(png_ptr, info_ptr);
+	height = png_get_image_height(png_ptr, info_ptr);
+
+//	png_byte color_type = png_get_color_type(png_ptr, info_ptr);
+//	png_byte bit_depth = png_get_bit_depth(png_ptr, info_ptr);
+
+//	int number_of_passes = png_set_interlace_handling(png_ptr);
+//	png_read_update_info(png_ptr, info_ptr);
+
+
+	// read file 
+	if (setjmp(png_jmpbuf(png_ptr))){
+		printf("%s is not a png file.\n",image_name);
+		fclose(fp);
+		return 0;
+	}
+
+	row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
+	for (y=0; y<height; y++)
+			row_pointers[y] = (png_byte*) malloc(png_get_rowbytes(png_ptr,info_ptr));
+
+	png_read_image(png_ptr, row_pointers);
+
+
+	if (png_get_color_type(png_ptr, info_ptr) != PNG_COLOR_TYPE_RGBA){
+		printf("%s color type not implemented. Must be RGBA.\n",image_name);
+		fclose(fp);
+		return 0;
+	}
+
+
+
+
+
+	BITMAP * bmp = (BITMAP*)malloc(sizeof(BITMAP));
+
+	bmp->width = width;
+	bmp->height = height;
+
+	// try to allocate memory
+	if ((bmp->data = (FB_pixel *) malloc(sizeof(FB_pixel)*(bmp->width*bmp->height))) == NULL)
+	{
+		fclose(fp);
+		printf("Error allocating memory for file %s.\n",image_name);
+		free(bmp);
+		return NULL;
+	}
+
+	for (y=0; y<height; y++) {
+			png_byte* row = row_pointers[y];
+			for (x=0; x<width; x++) {
+					png_byte* ptr = &(row[x*4]);
+					bmp->data[y*width+x]=FB_makecol(ptr[0], ptr[1], ptr[2], ptr[3]);
+			}
+	}
+	
+	fclose(fp);
+	return bmp;
+
+}
+
+
 BITMAP * FB_bitmapLoad(char * image_name){
 	int siz = strlen(image_name);
 	if(strcmp(image_name+siz-4,".bmp")==0)
 		return BMPbitmapLoad(image_name);
 	if(strcmp(image_name+siz-4,".jpg")==0 || strcmp(image_name+siz-5,".jpeg")==0)
 		return JPEGbitmapLoad(image_name);
+	if(strcmp(image_name+siz-4,".png")==0)
+		return PNGbitmapLoad(image_name);
 	
 	printf("FB_bitmapLoad: file type not implemented.\n");
 	

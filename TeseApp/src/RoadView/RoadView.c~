@@ -36,6 +36,10 @@ static Position my_pos;
 static bool warning;
 static BITMAP * warning_bmp;
 
+W_List * speed_label;
+W_List * azi_label;
+W_List * zoom_Label;
+
 bool verifyX(int x){
 	if(x<table_location.x+ARROW_RAD || x>table_location.x + table_length.x - ARROW_RAD) return false;
 	return true;
@@ -229,15 +233,12 @@ void RoadView_update_my(int x_cm,int y_cm, int vel, unsigned int angle){
 			table_location.x + table_length.x/2+car_width_s2-1, table_location.y - 1-car_back+car_lenght_s2+1, FB_makecol(0,0,255,0));
 	FB_rectfill(table_location.x+table_length.x/2-car_width_s2-1, table_location.y-1-car_back-car_lenght_s2+1,
 			table_location.x + table_length.x/2+car_width_s2+1, table_location.y - 1-car_back+car_lenght_s2-1, FB_makecol(0,0,255,0));
-
-	// actualizar os dados a apresentar
-
-	FB_rectfill(table_location.x+table_length.x+6,table_location.y,table_location.x+table_length.x+150,table_location.y - 2*20,FB_makecol(0,0,0,0));
-	FB_printf(table_location.x+table_length.x+15,table_location.y-2*20,FB_makecol(255,255,255,0),"ANG: %d deg",(int)(my_pos.d));
-	FB_printf(table_location.x+table_length.x+15,table_location.y-20,FB_makecol(255,255,255,0),"VEL: %d km/h",(int)(my_pos.vel));
 }
 
 void RoadView_update_myCoor(Coor * c){
+	FB_rectfill(table_location.x+table_length.x+6,table_location.y,table_location.x+table_length.x+150,table_location.y - 6*20,FB_makecol(0,0,0,0));
+	FB_printf(table_location.x+table_length.x+15,table_location.y-2*20,FB_makecol(255,255,255,0),"ANG: %d deg",(int)(c->asimuth));
+	FB_printf(table_location.x+table_length.x+15,table_location.y-20,FB_makecol(255,255,255,0),"VEL: %d km/h",(int)(c->vel));
 	Coor_utmCalc(c);
 	RoadView_update_my( c->x, c->y, c->vel, c->asimuth);
 }
@@ -400,10 +401,7 @@ void RoadView_start() {
 
 	w_button_add("Zoom in" , 0 , xs , ys , xf, ys+yl, RoadView_ZoomIn, 0);
 	ys+=yl+10;
-
 	w_button_add("Zoom out" , 0 , xs , ys , xf, ys+yl, RoadView_ZoomOut, 0);
-	ys+=yl+10;
-
 
 	w_redraw_all();
 	
@@ -431,18 +429,6 @@ void RoadView_redraw(){
 			table_location.x + table_length.x/2+car_width_s2-1, table_location.y - 1-car_back+car_lenght_s2+1, FB_makecol(0,0,255,0));
 	FB_rectfill(table_location.x+table_length.x/2-car_width_s2-1, table_location.y-1-car_back-car_lenght_s2+1,
 			table_location.x + table_length.x/2+car_width_s2+1, table_location.y - 1-car_back+car_lenght_s2-1, FB_makecol(0,0,255,0));
-
-
-
-	// dados do condutor
-	W_List w_imagebutton_add(char * image_name , int x, int y, int trans_color,void (*action)(void*), void * param); // -1 to trans_color be first pixel
-	FB_rectfill(table_location.x+table_length.x+5,table_location.y,table_location.x+table_length.x+150,table_location.y - 3*20,FB_makecol(0,0,0,0));
-	FB_printf(table_location.x+table_length.x+15,table_location.y-3*20,FB_makecol(255,255,255,0),"ZOOM: %d m",(int)(meters_per_pixel * table_length.y));
-	FB_printf(table_location.x+table_length.x+15,table_location.y-2*20,FB_makecol(255,255,255,0),"ANG: %d deg",(int)(my_pos.d));
-	FB_printf(table_location.x+table_length.x+15,table_location.y-20,FB_makecol(255,255,255,0),"VEL: %d km/h",(int)(my_pos.vel));
-
-
-	// restantes veículos
 	Road * r = road;
 
 	while(r != 0){

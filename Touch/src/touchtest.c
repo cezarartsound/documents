@@ -15,6 +15,7 @@
 int main(){
 	struct input_event event;
 	FILE * fd = fopen("/dev/input/event1","r");
+	char c;
 
 	printf("Boraa!\r\n");
 
@@ -23,6 +24,10 @@ int main(){
 		while(1){
 			if((fread(&event,sizeof(struct input_event),1,fd))>0)
 				printf("%x - %x - %d\r\n",event.type,event.code,event.value);
+/*	
+			if((fread(&c,1,1,fd))>0)
+				printf("%d\r\n",c);
+*/		
 		}
 	}else
 		printf("Nao abriu :/\r\n");
