@@ -335,7 +335,7 @@ void * startFileRead(void * v){
 		FB_rectfill(10, ymax - 10, 200, ymax - 40 ,FB_makecol(0,0,0,0));
 		FB_printf(20, ymax - 40, FB_makecol(0,255,0,0),"File readed.");
 	}
-	printf("File readed.");
+	printf("File readed.\n");
 
 	fclose(file);
 
@@ -402,11 +402,12 @@ void indication_cb(const struct ma_unitdata_indication *indication)
 
 
 		printf("Received: vehicle %d at %f,%f\n",id,coor->lat,coor->lon);
-		if(!noVehicle)	
+		if(!noVehicle){	
 			if(id==0)
 				RoadView_update_myCoor(coor);
 			else
 				RoadView_update_Coor(id,coor);
+		}
 	}
 }
 
@@ -677,6 +678,19 @@ int main (int argc, char **argv){
 		printf("Graphics disable\n");
 	}
 	
+	if(tid != -1){
+			
+		int retval = ma_init(0, &dev, &indication_cb, &status_indication_cb, &xstatus_indication_cb);
+		if (retval != 0) {
+			fprintf(stderr, "ERROR: failed to initialize mac layer: %s.\n", strerror(retval));
+			return -1;
+		}
+		printf("MA initialized\n");
+		//if(!noVehicle)
+		pthread_create(&RFtid_app, &RFtattr_app, startRF,(void*)(tid<<16 | tpower<<8 | tmodulation));
+	}	
+
+	
 	if(port != -1){
 		showInfo();
 		pthread_create(&tid_app, &tattr_app, startEthernetConnection,(void*)(intptr_t)port);
@@ -691,18 +705,6 @@ int main (int argc, char **argv){
 		
 	} 
 	
-	if(tid != -1){
-	
-		int retval = ma_init(0, &dev, &indication_cb, &status_indication_cb, &xstatus_indication_cb);
-		if (retval != 0) {
-			fprintf(stderr, "ERROR: failed to initialize mac layer: %s.\n", strerror(retval));
-			return -1;
-		}
-		//if(!noVehicle)
-		pthread_create(&RFtid_app, &RFtattr_app, startRF,(void*)(tid<<16 | tpower<<8 | tmodulation));
-		
-	}
-
 	if(serialr != -1)
 		GPS_init(serialname,GPSreceive);
 
