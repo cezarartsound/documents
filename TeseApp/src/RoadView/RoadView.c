@@ -55,7 +55,6 @@ bool verifyY(int y){
 	return true;
 }
 
-
 void drawCar(Vehicle * v) {
 	
 	// meter a origem do plano a posicao do veiculo
@@ -104,19 +103,58 @@ void drawCar(Vehicle * v) {
 	int y2 = y1-ARROW_HEAD_COMP*cos(sig);
 	int x3 = x1-ARROW_HEAD_COMP*cos(del);
 	int y3 = y1-ARROW_HEAD_COMP*sin(del);
-
-	if(verifyX(x) && verifyY(y) && verifyX(x1) && verifyY(y1) 
-		&& verifyX(x2) && verifyY(y2) && verifyX(x3) && verifyY(y3)){ 
+	
+	int xxx,yyy,xx1,yy1;
+	if(x>x1){xxx=x+10;xx1=x1-10;}
+	else{xxx=x1+10;xx1=x-10;}
+	if(y>y1){yyy=y+10;yy1=y1-10;}
+	else{yyy=y1+10;yy1=y-10;}
+	
+	if(xx1 > table_location.x+4 &&  xxx < table_location.x + table_length.x-4 && yyy < table_location.y-4 &&  yy1 > table_location.y - table_length.y+4){
+//	if(verifyX(x) && verifyY(y) && verifyX(x1) && verifyY(y1) 
+//		&& verifyX(x2) && verifyY(y2) && verifyX(x3) && verifyY(y3)){ 
 
 		FB_circle(x,y,ARROW_RAD,color);
 		FB_line(x,y,x1,y1,color);
 		FB_line(x1,y1,x2,y2,color);
 		FB_line(x1,y1,x3,y3,color);
+		
+		int cw;
+		if(v->warn) cw=FB_makecol(255,0,0,0);
+		else cw=FB_makecol(255,255,255,0); 
+		FB_rect(xxx,yyy,xx1,yy1,cw);
+		FB_rect(xxx+1,yyy+1,xx1+1,yy1+1,cw);
+	}
+}
+
+void drawMark(int x1, int y1 , int r, FB_pixel color, char * str) {
+	
+	// meter a origem do plano a posicao do veiculo
+	int xx = x1 - my_pos.x;
+	int yy = y1 - my_pos.y;
+
+	// rodar plano para ver `a frente do veiculo
+	int x = xx*cos(my_pos.d) - yy*sin(my_pos.d);
+	int y = xx*sin(my_pos.d) + yy*cos(my_pos.d);
+
+	// meter (x,y) em pixels
+	x = table_location.x + table_length.x/2 + (x/100.0/meters_per_pixel);
+	y = table_location.y - ((y+CAR_BACK_CM_VIEW)/100.0/meters_per_pixel);
+	r = r/100.0/meters_per_pixel;
+	
+	// verificar se esta' dentro da zona de desenho
+	if(!(x > table_location.x &&  x < table_location.x + table_length.x && y < table_location.y &&  y > table_location.y - table_length.y))
+		return;
+
+	if(verifyX(x) && verifyY(y)){ 
+		FB_circle(x,y,r,color);
+		FB_printf(x,y,FB_makecol(255,0,0,0),str);
 	}
 }
 
 void eraseCar(Vehicle * v ){
 	
+	// int color = FB_makecol(225,225,240,0); //deixar rasto
 	int color = BACKGROUND_COLOR;
 	int x = v->last_x;
 	int y = v->last_y;
@@ -140,6 +178,13 @@ void eraseCar(Vehicle * v ){
 		FB_line(x,y,x1,y1,color);
 		FB_line(x1,y1,x2,y2,color);
 		FB_line(x1,y1,x3,y3,color);
+	
+		if(x>x1){x+=10;x1-=10;}
+		else{x-=10;x1+=10;}
+		if(y>y1){y+=10;y1-=10;}
+		else{y-=10;y1+=10;}
+		FB_rect(x,y,x1,y1,color);
+		FB_rect(x+1,y+1,x1+1,y1+1,color);
 	}
 }
 
@@ -279,6 +324,7 @@ void RoadView_update(int vehicle_id, int x_cm, int y_cm, int vel, unsigned int a
 			r->v->pos->y = y_cm;
 			r->v->pos->vel = vel;
 			r->v->pos->d = (double)angle * atan(1)*4 /180.0;
+			r->v->warn = false;
 			if(r->v->pos->vel < 5) // velocidades reduzidas resultam azimuths erradas
 				r->v->pos->d = r->v->pos->prev->d;
 
@@ -290,10 +336,10 @@ void RoadView_update(int vehicle_id, int x_cm, int y_cm, int vel, unsigned int a
 				free(p);
 			}else
 				r->v->snake_count++;
-
-			drawCar( r->v);
 			
 			RoadView_caution(r->v);
+			drawCar( r->v);
+			
 			break;
 		}
 		r = r->next;
@@ -313,10 +359,11 @@ void RoadView_update(int vehicle_id, int x_cm, int y_cm, int vel, unsigned int a
 		road->v->pos->next = NULL;
 		road->v->snake_count = 1;
 		road->v->count = 0;
+		road->v->warn = false;
 		r = road;
 
-		drawCar( r->v);
 		RoadView_caution(r->v);
+		drawCar( r->v);
 	}
 
 	pthread_mutex_unlock(&mutex);
@@ -424,6 +471,7 @@ void RoadView_start(bool input_cal, char * input_dev) {
 	
 }
 
+void drawCurves();
 void RoadView_redraw(){
 	FB_clear_screen(FB_makecol(0,0,0,0));
 
@@ -462,7 +510,6 @@ void RoadView_redraw(){
 	}
 
 	w_redraw_all();
-
 }
 
 
@@ -473,6 +520,12 @@ void RoadView_redraw(){
 
 
 
+
+
+
+
+
+/* ALGORITMO CRUZAMENTO */
 
 
 
@@ -559,17 +612,66 @@ bool safetyZones(Vehicle * v){
 void warning_clean(void * v){
 	warning = false;
 	FB_rectfill(table_location.x+table_length.x+20,table_location.y-table_length.y,
-			table_location.x+table_length.x+20+warning_bmp->width,table_location.y-table_length.y+warning_bmp->height,
+			xmax,table_location.y-table_length.y+warning_bmp->height+20,
 			FB_makecol(0,0,0,0));
 }
 
-void warning_trow(){
+void warning_trow(char * str){
 	if(warning == false){
 		warning = true;
 		FB_bitmapDraw(warning_bmp,table_location.x+table_length.x+20,table_location.y-table_length.y);
+		
+		FB_rectfill(table_location.x+table_length.x+20,table_location.y-table_length.y+warning_bmp->height+20,
+			xmax,table_location.y-table_length.y+warning_bmp->height,FB_makecol(0,0,0,0));
+		FB_printf(table_location.x+table_length.x+20,table_location.y-table_length.y+5+warning_bmp->height,FB_makecol(255,0,0,0),str);
+		
 		event_once_add(warning_clean,0, WARNING_BMP_MS);
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ALGORITMO CURVA */
+
+
+
+
+
+#define CURVE_VEL_MIN_VALID 10 //km/h
+#define CURVE_ANGLE_DIF_DETECTION (10*PI/180) //rad to step states
+#define CURVE_ANGLE_DIF_PERCENT 0.1 // percent of a curve rad to take begin and end of curve
+#define CURVE_ANGLE_MIN (20*PI/180) //rad to considerate a valid curve
+#define CURVE_MAX_RAD 10000 // 100 meters
+#define CURVE_MIN_RAD 1500
+
+typedef struct _curve{
+	int R; // raio da curva, cm
+	int RA; // raio da area de aviso, cm
+	int vel_mean; // vel mean, km/h
+	int vel_max; // velocidade maxima para o raio da curva, km/h
+	int x;
+	int y;
+	double d;
+	int count; // count seconds to delete by time
+	int entries; // nr of reg in same curve
+	struct _curve * next;
+}Curve;
+
+Curve * curves = NULL;
 
 double absDifRad(double ai, double af){
 	double a = af - ai;
@@ -578,19 +680,6 @@ double absDifRad(double ai, double af){
 		return 2*PI - a;
 	return a;
 }
-
-#define CURVE_VEL_MIN_VALID 10 //km/h
-#define CURVE_ANGLE_DIF_DETECTION (10*PI/180) //rad to step states
-#define CURVE_ANGLE_DIF_PERCENT 0.1 // percent of a curve rad to take begin and end of curve
-#define CURVE_ANGLE_MIN (20*PI/180) //rad to considerate a valid curve
-#define CURVE_MAX_RAD 10000 // 100 meters
-
-typedef struct _curve{
-	int R; // raio, cm
-	int vel; // vel mean, km/h
-	int x;
-	int y;
-}Curve;
 
 int getCurve(Position * p, Curve * c){
 	if(p==NULL) return -1;
@@ -606,11 +695,10 @@ int getCurve(Position * p, Curve * c){
 	double lastAngle = pos->d;
 	pos = pos->next;
 
-	while(pos!=last){
+	while(pos!=last && state!=3){
 		switch(state){
 			case 1:
-				if(pos->vel < CURVE_VEL_MIN_VALID)
-					break;
+				//if(pos->vel < CURVE_VEL_MIN_VALID) break;
 				if(absDifRad(lastAngle,pos->d)>CURVE_ANGLE_DIF_DETECTION){
 						p1 = pos->prev->prev;
 						count = 3;
@@ -621,54 +709,154 @@ int getCurve(Position * p, Curve * c){
 			case 2:
 				vel += pos->vel;
 				count++;
-				if(absDifRad(lastAngle,pos->d)>CURVE_ANGLE_DIF_DETECTION){
+				if(absDifRad(lastAngle,pos->d)<CURVE_ANGLE_DIF_DETECTION){
 					if(p1!=pos->prev && p1!=pos->prev->prev){
 						p2 = pos;
 						state = 3;
 					}
 				}
 				break;
-		}		
-		
-		if(state==3){
-			p2 = p2->prev->prev;
-			int d = sqrt(pow(p1->x-p2->x,2) + pow(p1->y-p2->y,2));
-			c->R = fabs((d/2) / sin(fabs(p1->d - p2->d)));
-			if(c->R>CURVE_MAX_RAD) return -1;
-			c->vel = vel/count;
-			c->x = p1->x;
-			c->y = p1->y;
-			return  0;	
 		}
 			
 		lastAngle = pos->d;
 		pos = pos->next;
 	}
+	if(state==2){
+		p2 = pos->prev;
+		state = 3;
+	}
+	if(state==3){
+		if(absDifRad(p2->d,p1->d) < 40*PI/180.0 || vel/count < 3)
+			return -1; 
+		p2 = p2->prev->prev;
+		int d = sqrt(pow(p1->x-p2->x,2) + pow(p1->y-p2->y,2));
+		c->R = fabs((d/2) / sin(fabs(p1->d - p2->d)));
+		if(c->R>CURVE_MAX_RAD || c->R<CURVE_MIN_RAD) return -1;
+		c->vel_mean = vel/count;
+		c->x = p1->x;
+		c->y = p1->y;
+		c->d = p1->d;
+		c->vel_max = 5.4*sqrt(c->R/100);
+		c->RA = 100*c->vel_max/3.6 + 1500;
+		c->count = 0;
+		c->next = NULL;
+	//	printf("R=%d,RA=%d,velmax=%d\n",c->R,c->RA,c->vel_max);
+		return  0;	
+	}
 	return -1;
 }
 
-char str[100];  //TODO delete
-bool RoadView_caution(Vehicle * v){
-	bool attention = false;
+void addCurve(Curve * c){
+	Curve * cc = curves;
 
-	double angle_dif = abs(v->pos->d - my_pos.d);
+	if(curves == NULL){
+		c->next = curves;
+		curves = (Curve*)malloc(sizeof(Curve));
+		memcpy(curves,c,sizeof(Curve));
+		curves->entries = 1;
+	}else{
+		while(cc!=NULL){
+			if(pow(c->x-cc->x,2)+pow(c->y-cc->y,2)<cc->RA*cc->RA && absDifRad(c->d,cc->d)<45*PI/180){ // same curve
+				cc->x = (c->x+cc->x)/2;
+				cc->y = (c->y+cc->y)/2;
+				cc->vel_max = (c->vel_max+cc->vel_max)/2;
+				cc->vel_mean = (c->vel_mean+cc->vel_mean)/2;
+				cc->R = (c->R+cc->R)/2;	
+				cc->RA = (c->RA+cc->RA)/2;	
+				cc->d = (c->d+cc->d)/2;
+				cc->count = 0;	
+				cc->entries++;
+				return;
+			}
+			cc = cc->next;
+		}
+		c->next = curves;
+		curves = (Curve*)malloc(sizeof(Curve));
+		memcpy(curves,c,sizeof(Curve));
+		curves->entries = 1;
+	}
+}
+
+Curve * checkCurves(){
+	Curve * c = curves;
+	while(c!=NULL){
+		if(pow(c->x-my_pos.x,2)+pow(c->y-my_pos.y,2)<c->RA*c->RA && absDifRad(c->d,my_pos.d)<40*PI/180)
+			return c;
+		c = c->next;
+	}
+	return NULL;
+}
+
+void RoadView_drawCurves(){
+	Curve * c = curves;
+	char str[50];
+	while(c!=NULL){
+		sprintf(str,"R=%d,Vmax=%d",c->R/100,c->vel_max);
+		drawMark(c->x, c->y , c->RA, FB_makecol(255,0,0,0),str);
+		c = c->next;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*  WARNING MAIN   */
+
+
+Curve curve;
+char str[100];  // memory to use
+bool RoadView_caution(Vehicle * v){
+	int attention = 0;
+	double angle_dif = absDifRad(v->pos->d , my_pos.d);
+	Curve * c;	
+	
 	if(angle_dif > atan(1)*4) angle_dif = 2*4*atan(1)-angle_dif;
 
 	if(angle_dif > 2.79) return false; // >160º = sentido oposto		
-	if(v->id==2){
-		Curve c; 
-		if(getCurve(v->pos, &c)==0){	
-			sprintf(str,"V = %d , Radius = %d cm , Vel = %d km/h\n",v->id,c.R,c.vel);
-			printStatus(str);	
-		}
-	}
+	if(getCurve(v->pos, &curve)==0)	
+		addCurve(&curve);
+	if((c=checkCurves())!=NULL){			
+		if(c->R<CURVE_MIN_RAD)// && c->vel_mean<25) // cruzamento
+			attention = safetyZones(v)?1:0;
+		else if(my_pos.vel >= c->vel_max)
+			attention = 2;	
+	}else
+		attention = safetyZones(v)?1:0;
 
-	attention = safetyZones(v);
+
+
+
 	
-	if(attention){ 
-		warning_trow();
-		printf("WARNING\n");
+	switch(attention){
+		case 0: return false;
+		case 2:
+			sprintf(str,"Curva Vmax=%d km/h",c->vel_max);
+			//printStatus(str);
+			warning_trow(str);
+			return true;	
+			
+		case 1:
+			v->warn = true;
+			sprintf(str,"Vehicle V=%d km/h",v->pos->vel);
+			//printStatus(str);
+			warning_trow(str);
+			return true;
+		default: return false;
 	}
-	return attention;
 }
-		

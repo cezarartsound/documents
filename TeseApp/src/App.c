@@ -289,10 +289,15 @@ void wait_input(){
 
 	FB_pixel cor = FB_makecol(255,255,255,0);
 
+	bool curves = false;
+
 	while(!appExit){
 		switch(c=getchar()){
 			case 'e':
 				appExit = true;
+				break;
+			case 'u':
+				curves = true;
 				break;
 			case '+':
 				meters = RoadView_ZoomIn();
@@ -320,6 +325,7 @@ void wait_input(){
 				break;
 			case '\n':	
 				RoadView_redraw();
+				if(curves){ RoadView_drawCurves(); curves = false;}
 				FB_printf(20, ymax - 40, cor, status);
 				break;
 			default:

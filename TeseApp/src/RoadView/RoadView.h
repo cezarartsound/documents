@@ -25,7 +25,7 @@
 #define WARNING_BMP_MS 2000  // tempo em ms que a imagem de aviso permanece
 #define WARNING_BMP_NAME "images/warning.png"  // imagem a aparecer em situaçao de aviso
 
-#define SNAKE_MAX_LEN 20 // numero de coordenadas da cobra
+#define SNAKE_MAX_LEN 10 // numero de coordenadas da cobra
 
 #define POSITION_RATE 1.1 // segundos
 #define TIME_REACTION 1.3  // tempo de reaçao em segundos
@@ -52,6 +52,7 @@ typedef struct _position{
 
 typedef struct _vehicle{
 	int id;
+	bool warn;
 
 	int snake_count;
 	Position * pos;
@@ -75,6 +76,8 @@ typedef struct _road{
 
 void RoadView_start(bool input_cal, char * input_dev);
 void RoadView_stop();
+void RoadView_redraw();
+void RoadView_drawCurves();
 
 void RoadView_delete(int vehicle_id);
 
