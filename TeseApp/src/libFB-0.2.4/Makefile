@@ -13,8 +13,9 @@ INC_PATH=/usr/include
 # Kernel sources (only includes are needed)
 KERN_SRC=/usr/src/linux
 # Default font file (see README.fonts for help)
-FONT_PATH=\"/usr/share/consolefonts/iso01.f14.psf.gz\"
-# FONT_PATH=/usr/share/kbd/consolefonts/tcvn8x16.psf.gz
+#FONT_PATH=\"/usr/share/consolefonts/iso01.f14.psf.gz\"
+# FONT_PATH=\"/usr/share/kbd/consolefonts/tcvn8x16.psf.gz\"
+ FONT_PATH=\"/usr/share/kbd/consolefonts/lat9-16.psf.gz\"
 
 # C compiler to use
 CC=gcc
