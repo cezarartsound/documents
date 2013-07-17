@@ -203,7 +203,7 @@ void RoadView_update_my(int x_cm,int y_cm, int vel, unsigned int angle){
 	my_pos.x = x_cm;
 	my_pos.y = y_cm;
 	my_pos.vel = vel;
-	//if(vel>5) // asimuth errada via gps, TODO melhorar
+//	if(vel>3) // asimuth errada via gps, TODO melhorar
 		my_pos.d = (double)angle * atan(1)*4 /180.0;
 	
 	// redesenhar os outros veiculos
@@ -265,6 +265,9 @@ void RoadView_update(int vehicle_id, int x_cm, int y_cm, int vel, unsigned int a
 			r->v->pos->y = y_cm;
 			r->v->pos->vel = vel;
 			r->v->pos->d = (double)angle * atan(1)*4 /180.0;
+			if(r->v->pos->vel < 5) // velocidades reduzidas resultam azimuths erradas
+				r->v->pos->d = r->v->pos->prev->d;
+
 			r->v->count = 0;
 			
 			if(r->v->snake_count > SNAKE_MAX_LEN){
@@ -346,6 +349,8 @@ void RoadView_start() {
 	meters_per_pixel = METERS_VISIBLE*1.0/table_length.y;
 
 
+	FB_clear_screen(FB_makecol(0,0,0,0));
+	
 	FB_rectfill(table_location.x-4, table_location.y+4,table_location.x + table_length.x+4,
 				 table_location.y - table_length.y - 4, FB_makecol(190,190,255,0));
 	FB_rectfill(table_location.x, table_location.y,table_location.x + table_length.x,

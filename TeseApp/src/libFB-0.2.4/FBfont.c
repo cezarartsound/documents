@@ -37,6 +37,8 @@ int FB_change_font(char *psf_file)
 	unsigned char byte;
 	int j,k;
 	char *glyph;
+
+	printf("Try open font: %s\n", psf_file);
 	
 	font = fopen(psf_file, "r");
 	if(font == NULL)
@@ -56,13 +58,13 @@ int FB_change_font(char *psf_file)
 	}
 	if(byte != 0x36)
 	{
-		fprintf(stderr, "%s is not a psf font file", psf_file);
+		fprintf(stderr, "%s is not a psf font file\n", psf_file);
 		return PARAM_ERR;
 	}
 	byte = fgetc(font);
 	if(byte != 0x04)
 	{
-		fprintf(stderr, "%s is not a psf font file", psf_file);
+		fprintf(stderr, "%s is not a psf font file\n", psf_file);
 		return PARAM_ERR;
 	}
 	delete_all_glyphs();
@@ -80,6 +82,9 @@ int FB_change_font(char *psf_file)
 		insert_glyph(k, glyph);
 	}
 	free(glyph);
+
+	printf("Font readed: %s\n",psf_file);
+
 	return OK;
 }
 
