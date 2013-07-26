@@ -38,7 +38,7 @@ int FB_change_font(char *psf_file)
 	int j,k;
 	char *glyph;
 
-	printf("Try open font: %s\n", psf_file);
+//	printf("Try open font: %s\n", psf_file);
 	
 	font = fopen(psf_file, "r");
 	if(font == NULL)
@@ -83,7 +83,7 @@ int FB_change_font(char *psf_file)
 	}
 	free(glyph);
 
-	printf("Font readed: %s\n",psf_file);
+//	printf("Font readed: %s\n",psf_file);
 
 	return OK;
 }

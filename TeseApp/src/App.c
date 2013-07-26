@@ -342,6 +342,7 @@ void print_usage(void)
     printf("  -g : turn on the GPS, in serial port indicated\n");
     printf("  -t : turn on transmition the coordinates of the other\n "
     		"       vehicles by radio\n");
+    printf("  -n : no graphics\n");
 }
 
 int main (int argc, char **argv){
@@ -353,12 +354,13 @@ int main (int argc, char **argv){
 */
 	int optch;
 	int port = -1;
+	int no_graph = -1;
 	char * filename = (char*)malloc(100);
 	char * serialname = (char*)malloc(100);
 	int filer = -1, serialr = -1;
 
 	do {
-	    optch = getopt(argc, argv, "ht:p:f:g:");
+	    optch = getopt(argc, argv, "hnt:p:f:g:");
 
 	    switch (optch) {
 	        case 'h':
@@ -379,6 +381,9 @@ int main (int argc, char **argv){
 	        case 't':
 	        	printf("-t option not yet implemented."); //TODO
 	            break;
+		case 'n':
+	        	no_graph = 1;
+			break;
 	        case -1:
 	            break;
 	        default:
@@ -394,13 +399,16 @@ int main (int argc, char **argv){
 		return -1;
 	}
 
-	FB_initlib ("/dev/fb0");
-	FB_change_font("font");
+	if(no_graph  == -1){
+		FB_initlib ("/dev/fb0");
+		FB_change_font("font");
 	
-	FB_getres(&xmax,&ymax);
-	printf("Resolution %dx%d\n",xmax,ymax);
-	FB_clear_screen (FB_makecol (0,0,0,0));
-	
+		FB_getres(&xmax,&ymax);
+		printf("Resolution %dx%d\n",xmax,ymax);
+		FB_clear_screen (FB_makecol (0,0,0,0));
+	}else
+		printf("Graphics disable\n");
+		
 	RoadView_start();
 	
 	if(port != -1){
