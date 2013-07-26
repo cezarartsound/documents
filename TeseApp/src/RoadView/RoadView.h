@@ -15,9 +15,9 @@
 #define BACKGROUND_COLOR FB_makecol(255,255,255,0)
 
 #define ARROW_ANG (atan(1))
-#define ARROW_COMP 25		// comprimento medio do vetor de velocidade, pixels
-#define ARROW_HEAD_COMP 10	// comprimento das barras da cabeça do vetor, pixels
-#define ARROW_RAD 6		// raio do circulo do vetor, pixels
+#define ARROW_COMP 20		// comprimento medio do vetor de velocidade, pixels
+#define ARROW_HEAD_COMP 7	// comprimento das barras da cabeça do vetor, pixels
+#define ARROW_RAD 4		// raio do circulo do vetor, pixels
 
 #define CAR_BACK_CM_VIEW 1000 // metros visiveis da traseira do veiculo
 #define METERS_VISIBLE 100 // metros visiveis em toda a altura da janela

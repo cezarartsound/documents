@@ -345,9 +345,9 @@ void print_usage(void)
 }
 
 int main (int argc, char **argv){
-/*	event_init();
-	RoadView_update_my(0,0,50,180);
-	RoadView_update(0,3000,-3000,50,270);
+/*	
+	FB_initlib ("/dev/fb0");
+	FB_rectfill(20,20,200,200,FB_makecol(255,0,0,0));
 	getchar();
 	return 0;
 */
@@ -395,6 +395,7 @@ int main (int argc, char **argv){
 	}
 
 	FB_initlib ("/dev/fb0");
+	FB_change_font("font");
 	
 	FB_getres(&xmax,&ymax);
 	printf("Resolution %dx%d\n",xmax,ymax);
