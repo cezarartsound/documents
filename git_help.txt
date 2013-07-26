@@ -1,0 +1,35 @@
+# First -  create account in github.com, or another site
+# Seconed - add publickey in computer
+	ssh-keygen -t rsa -C "cezarartsound@hotmail.com"
+# Trith - add publickey in github account, via web
+  # copping the content of ~/.ssh/id_rsa.pub to new SSH Key in github account
+# Fourth - start using git
+git config --global user.name "cezarartsound"
+git config --global user.email "cezarartsound@hotmail.com"
+
+git init # criar um repository
+
+git clone git@github.com:cezarartsound/documents # get repository
+
+git add filename # add file changes
+
+git checkout # see changes to be added
+
+git commit -m "msg" # update index
+
+git remote add origin git@github.com:cezarartsound/documents # create a repository shortcut named origin 
+
+# to push to the server need to add and commit the files with changes, every time
+
+git push git@github.com:cezarartsound/documents master # update online repository with master branch changes
+
+git push origin master # alternative
+
+git pull origin # update local repository
+
+
+git checkout -b branch_name # create new branch
+
+#update master branch
+git checkout master # switch to master branch
+git merge branch_name # merge files
