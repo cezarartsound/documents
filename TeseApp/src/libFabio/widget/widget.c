@@ -284,7 +284,7 @@ void _w_imagebutton_releasedraw(W_ImageButton * b){
 	int j,l;
 	word bitmap_offset = 0;
 
-	int transp_color = bmp->data[0];
+	unsigned int transp_color = bmp->data[0];
 	for(j=0;j<bmp->height;j++)
 	{
 		if(j==2 || j==bmp->height-2)

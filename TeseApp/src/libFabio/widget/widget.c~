@@ -42,7 +42,9 @@ void w_clean_screen(){
 	widget_free_all();
 }
 
-void w_redraw(
+inline void w_redraw(W_List * node){
+	node->redraw(node->component);
+}
 
 void w_redraw_all(){
 	W_List * aux = widgets;
@@ -226,7 +228,7 @@ W_List* w_button_add(char*text , int font_size , int x, int y, int x1, int y1, v
 
 	widgets = l;
 
-	return widgets;
+	return l;
 }
 
 W_List* w_button_addto(W_List** list,char*text , int font_size , int x, int y, int x1, int y1, void (*action)(void*), void * param){

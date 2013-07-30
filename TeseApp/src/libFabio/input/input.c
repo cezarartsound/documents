@@ -86,7 +86,7 @@ void input_flush(){
 	inputs_idx = 0;
 	input_x = input_y = -1;
 	pthread_mutex_unlock(input_mutex);
-	pthread_yield();
+	// pthread_yield(); // TODO: warnning i dont know why
 }
 
 void input_get_next_point(Point * point){
@@ -94,7 +94,7 @@ void input_get_next_point(Point * point){
 	int i = inputs_idx;
 	input_x = input_y = -1;
 	pthread_mutex_unlock(input_mutex);
-	pthread_yield();
+	// pthread_yield(); // TODO: warnning i dont know why
 
 	bool exit = 1;
 	while(exit){
@@ -106,7 +106,7 @@ void input_get_next_point(Point * point){
 			exit = 0;
 		}
 		pthread_mutex_unlock(input_mutex);
-		pthread_yield();
+		// pthread_yield(); // TODO: warnning i dont know why
 	}
 }
 
@@ -177,7 +177,6 @@ void input_getClickLock(Point * p){
 }
 
 int input_getClick(Point * p){
-	bool ret = 0;
 	int i;
 	pthread_mutex_lock(input_mutex);
 

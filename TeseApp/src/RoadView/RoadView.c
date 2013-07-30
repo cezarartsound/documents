@@ -400,10 +400,10 @@ void RoadView_start() {
 	int ys = table_location.y-table_length.y/2;
 	int yl = 50;
 
-	w_button_add("Zoom in" , 0 , xs , ys , xf, ys+yl, RoadView_ZoomIn, 0);
+	w_button_add("Zoom in" , 0 , xs , ys , xf, ys+yl, (void (*)(void*))RoadView_ZoomIn, 0);
 	ys+=yl+10;
 
-	w_button_add("Zoom out" , 0 , xs , ys , xf, ys+yl, RoadView_ZoomOut, 0);
+	w_button_add("Zoom out" , 0 , xs , ys , xf, ys+yl, (void (*)(void*))RoadView_ZoomOut, 0);
 	ys+=yl+10;
 
 
@@ -577,10 +577,10 @@ double difRad(double ai, double af){
 
 int getRadius(Position ** p){
 	Position * last = (*p);
-	Postion * pos = last->mext->next; // second most old
+	Position * pos = last->next->next; // second most old
 	int state = 1;
 	
-	Position * p1, p2;
+	Position * p1, * p2;
 
 	double lastAngle = pos->d;
 	pos = pos->next;
@@ -607,11 +607,9 @@ int getRadius(Position ** p){
 		}		
 		
 		if(state==3){
-			double dif = difRad(p2->d,p1->d);
-			double af = p2->d;
 			p2 = p2->prev->prev;
-			int d = sqrt(pow(p1.x-p2.x,2) + pow(p1.y-p2.y,2));
-			int r = abs((d/2) / sin(abs(p1.d - p2.d));
+			int d = sqrt(pow(p1->x-p2->x,2) + pow(p1->y-p2->y,2));
+			int r = abs((d/2) / sin(abs(p1->d - p2->d)));
 			(*p) = p1;
 			return r;	
 		}
@@ -630,7 +628,7 @@ bool RoadView_caution(Vehicle * v){
 
 	if(angle_dif > 2.79) return false; // >160º = sentido oposto		
 	
-	printf("V = %d , Radius = %d\n",v->id,getRadius(v->pos));
+	printf("V = %d , Radius = %d\n",v->id,getRadius(&(v->pos)));
 
 	attention = safetyZones(v);
 	

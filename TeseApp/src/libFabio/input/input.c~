@@ -1,3 +1,4 @@
+#define GNU_SOURCE  
 
 #include <linux/input.h>
 #include <stdio.h>
@@ -5,7 +6,7 @@
 #include <pthread.h>
 #include <unistd.h> //sleep
 #include "input.h"
-#include "input_vga.h"
+#include "../vga.h"
 
 FILE * input_fd;
 
@@ -85,7 +86,7 @@ void input_flush(){
 	inputs_idx = 0;
 	input_x = input_y = -1;
 	pthread_mutex_unlock(input_mutex);
-	pthread_yield();
+	//pthread_yield(); // TODO: warnning i dont know why
 }
 
 void input_get_next_point(Point * point){
@@ -93,7 +94,7 @@ void input_get_next_point(Point * point){
 	int i = inputs_idx;
 	input_x = input_y = -1;
 	pthread_mutex_unlock(input_mutex);
-	pthread_yield();
+	// pthread_yield(); // TODO: warnning i dont know why
 
 	bool exit = 1;
 	while(exit){
@@ -129,16 +130,16 @@ void input_calibration(){
 	input_get_next_point(&p1);
 	printf("(%d,%d)\r\n",p1.x,p1.y);
 
-	VGA_fill_rect(40,80,250,50,COLOR_WHITE);
 
 
 
+	VGA_fill(COLOR_WHITE);
 
 	VGA_drawText("Guardando os dados...", 150,220,COLOR_RED);
 	sleep(1);
-	VGA_fill_rect(150,220,500,190,COLOR_WHITE);
 
 
+	VGA_fill(COLOR_WHITE);
 
 
 
@@ -151,8 +152,8 @@ void input_calibration(){
 	input_get_next_point(&p2);
 	printf("(%d,%d)\r\n",p2.x,p2.y);
 
-	VGA_fill_rect(400,365,565,330,COLOR_WHITE);
 
+	VGA_fill(COLOR_WHITE);
 
 
 
@@ -165,8 +166,8 @@ void input_calibration(){
 
 	VGA_drawText("Calibracao concluida!", 150,220,COLOR_RED);
 	sleep(1);
-	VGA_fill_rect(150,220,500,190,COLOR_WHITE);
 
+//	VGA_fill(COLOR_WHITE);
 }
 
 void input_getClickLock(Point * p){
@@ -176,7 +177,6 @@ void input_getClickLock(Point * p){
 }
 
 int input_getClick(Point * p){
-	bool ret = 0;
 	int i;
 	pthread_mutex_lock(input_mutex);
 
