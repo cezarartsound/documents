@@ -18,6 +18,8 @@
 #include "../libFabio/input/input.h"
 #include "RoadView.h"
 
+#define PI (4*atan(1))
+
 Road * road = 0;
 
 static pthread_attr_t tattr;
@@ -205,7 +207,7 @@ void RoadView_update_my(int x_cm,int y_cm, int vel, unsigned int angle){
 	my_pos.x = x_cm;
 	my_pos.y = y_cm;
 	my_pos.vel = vel;
-//	if(vel>3) // asimuth errada via gps, TODO melhorar
+	if(vel>2) // asimuth errada via gps, TODO melhorar
 		my_pos.d = (double)angle * atan(1)*4 /180.0;
 	
 	// redesenhar os outros veiculos
@@ -233,7 +235,7 @@ void RoadView_update_my(int x_cm,int y_cm, int vel, unsigned int angle){
 	// actualizar os dados a apresentar
 
 	FB_rectfill(table_location.x+table_length.x+6,table_location.y,table_location.x+table_length.x+150,table_location.y - 2*20,FB_makecol(0,0,0,0));
-	FB_printf(table_location.x+table_length.x+15,table_location.y-2*20,FB_makecol(255,255,255,0),"ANG: %d deg",(int)(my_pos.d));
+	FB_printf(table_location.x+table_length.x+15,table_location.y-2*20,FB_makecol(255,255,255,0),"ANG: %d deg",(int)(my_pos.d*180/PI));
 	FB_printf(table_location.x+table_length.x+15,table_location.y-20,FB_makecol(255,255,255,0),"VEL: %d km/h",(int)(my_pos.vel));
 }
 
@@ -435,10 +437,9 @@ void RoadView_redraw(){
 
 
 	// dados do condutor
-	W_List w_imagebutton_add(char * image_name , int x, int y, int trans_color,void (*action)(void*), void * param); // -1 to trans_color be first pixel
 	FB_rectfill(table_location.x+table_length.x+5,table_location.y,table_location.x+table_length.x+150,table_location.y - 3*20,FB_makecol(0,0,0,0));
 	FB_printf(table_location.x+table_length.x+15,table_location.y-3*20,FB_makecol(255,255,255,0),"ZOOM: %d m",(int)(meters_per_pixel * table_length.y));
-	FB_printf(table_location.x+table_length.x+15,table_location.y-2*20,FB_makecol(255,255,255,0),"ANG: %d deg",(int)(my_pos.d));
+	FB_printf(table_location.x+table_length.x+15,table_location.y-2*20,FB_makecol(255,255,255,0),"ANG: %d deg",(int)(my_pos.d*180/PI));
 	FB_printf(table_location.x+table_length.x+15,table_location.y-20,FB_makecol(255,255,255,0),"VEL: %d km/h",(int)(my_pos.vel));
 
 
@@ -541,20 +542,6 @@ bool safetyZones(Vehicle * v){
 		}
 	}
 
-
-/*	int count, i, j;
-	// deteta ponto no interior de uma zona, nao e' bom
-	for (i = 0; i < 4; i++) // percorrer os vertices de Z1 para verificar se estao no interior de Z2
-	{
-		count = 0;
-		for (j = 0; j < 4; j++) // percorrer todas as arestas de Z2
-		{
-			if ((Z2[(j + 1)%4][0] - Z2[j][0]) * (Z1[i][1] - Z2[j][1]) - (Z2[(j + 1)%4][1] - Z2[j][1]) * (Z1[i][0] - Z2[j][0]) > 0)
-				count++;
-		}
-		if (count == 4) return true;
-	}
-*/
 	return false;
 }
 
@@ -574,15 +561,78 @@ void warning_trow(){
 	}
 }
 
+double difRad(double ai, double af){
+	double a = af - ai;
+	if(a>PI)
+		return 2*PI - a;
+	if(a<-PI)
+		return -2*PI - a;
+	return a;
+}
+
+#define CURVE_VEL_MIN_VALID 10 //km/h
+#define CURVE_ANGLE_DIF_DETECTION (10*PI/180) //rad to step states
+#define CURVE_ANGLE_DIF_PERCENT 0.1 // percent of a curve rad to take begin and end of curve
+#define CURVE_ANGLE_MIN (20*PI/180) //rad to considerate a valid curve
+
+int getRadius(Position ** p){
+	Position * last = (*p);
+	Postion * pos = last->mext->next; // second most old
+	int state = 1;
+	
+	Position * p1, p2;
+
+	double lastAngle = pos->d;
+	pos = pos->next;
+
+	while(pos!=last){
+		switch(state){
+			case 1:
+				if(pos->vel < CURVE_VEL_MIN_VALID)
+					break;
+				if(abs(difRad(lastAngle,pos->d))>CURVE_ANGLE_DIF_DETECTION){
+						p1 = pos->prev->prev;
+						state = 2;			
+				}
+				break;
+			case 2:
+				
+				if(abs(difRad(lastAngle,pos->d))>CURVE_ANGLE_DIF_DETECTION){
+					if(p1!=pos->prev && p1!=pos->prev->prev){
+						p2 = pos;
+						state = 3;
+					}
+				}
+				break;
+		}		
+		
+		if(state==3){
+			double dif = difRad(p2->d,p1->d);
+			double af = p2->d;
+			p2 = p2->prev->prev;
+			int d = sqrt(pow(p1.x-p2.x,2) + pow(p1.y-p2.y,2));
+			int r = abs((d/2) / sin(abs(p1.d - p2.d));
+			(*p) = p1;
+			return r;	
+		}
+			
+		lastAngle = pos->d;
+		pos = pos->next;
+	}
+	return -1;
+}
+
 bool RoadView_caution(Vehicle * v){
 	bool attention = false;
 
 	double angle_dif = abs(v->pos->d - my_pos.d);
 	if(angle_dif > atan(1)*4) angle_dif = 2*4*atan(1)-angle_dif;
 
-	if(angle_dif < 2.79 ){ // >160º: sentido oposto
-		attention = safetyZones(v);
-	}
+	if(angle_dif > 2.79) return false; // >160º = sentido oposto		
+	
+	printf("V = %d , Radius = %d\n",v->id,getRadius(v->pos));
+
+	attention = safetyZones(v);
 	
 	if(attention){ 
 		warning_trow();

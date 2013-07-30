@@ -19,7 +19,7 @@ FBLIB_PATH = src/libFB-0.2.4
 
 all: $(FBLIB) $(OBJECTS) 
 	$(CC) $(CFLAGS) -o $(MAIN_OUT) $(MAIN_IN) $(OBJECTS) $(LIBS)
-#	rm -R -f $(OBJECTS) $(MAIN) $(GRAPHLIB)
+	rm -R -f $(OBJECTS) $(MAIN) $(GRAPHLIB)
 
 $(FBLIB):
 	make -C $(FBLIB_PATH)

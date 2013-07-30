@@ -277,7 +277,7 @@ int main(int argc, char **argv){
 				sscanf(optarg, "%s", serial_name);
 				break;
 
-			case -1:
+			case 255:
 				break;
 
 			default:
@@ -285,7 +285,7 @@ int main(int argc, char **argv){
 				return EXIT_FAILURE;
 				break;
 		}
-	} while (optch != -1);
+	} while (optch != 255);
 
 	if(serial_name[0]<0){
 		fprintf(stderr, "Serial_name must be defined\n");

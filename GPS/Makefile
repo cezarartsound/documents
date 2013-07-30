@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS= -g -O0 -pthread -Wall -Wextra -Wno-unused-parameter
-MAIN = GPS
+MAIN = GPS_motorola
 MAIN_IN = src/$(MAIN).c
 MAIN_OUT = src/$(MAIN)
 

@@ -142,16 +142,16 @@ void GPSreceive(GPSCoor * c){
 	Coor_destroy(coor);
 }
 
-void moveCars(Coor * origin){
+void moveCars(Coor * origin, bool my){
 	int i;
 	while(exitProgram!=true){
 		if(my_car_id == 0 && origin != NULL)
-			RoadView_update_myCoor(origin);
+			if(my) RoadView_update_myCoor(origin);
 		
 		for(i=0;tracks[i]!=0;i++){
-			if(i+1 == my_car_id)
-				RoadView_update_myCoor(tracks[i]->coor);
-			else
+			if(i+1 == my_car_id){
+				if(my) RoadView_update_myCoor(tracks[i]->coor);
+			}else
 				RoadView_updateCoor(i,tracks[i]->coor);
 			tracks[i] = tracks[i]->next;
 		}
@@ -160,7 +160,8 @@ void moveCars(Coor * origin){
 }
 
 void * startFileRead(void * v){
-	char* filename = (char*)v;
+	bool my =  *((bool*)v);
+	char* filename = (char*)(v+1);
 
 	FILE * file = fopen(filename,"r");
 	if(file == NULL){
@@ -224,7 +225,7 @@ void * startFileRead(void * v){
 
 	fclose(file);
 
-	moveCars(origin);
+	moveCars(origin,my);
 END:
 	// TODO Coor_delete(tracks[i]->coor); free(tracks[i]->next); free(tracks[i]);
 
@@ -370,7 +371,7 @@ int main (int argc, char **argv){
 	            break;
 	        case 'f':
 	        	filer = 0;
-	            sscanf(optarg, "%s", filename);
+	            sscanf(optarg, "%s", filename+1);
 	            break;
 	        case 'g':
 	        	serialr = 0;
@@ -414,6 +415,10 @@ int main (int argc, char **argv){
 		FB_printf(20, ymax - 40, FB_makecol(255,255,255,0),"Espera de ligacao...    port - %d",port);
 		pthread_create(&tid_app, &tattr_app, startEthernetConnection,(void*)(intptr_t)port);
 	}else if(filer != -1){
+		if(serialr != -1) // ler minhas coordenadas do ficheiro se nao activar o gps
+			(*filename) = false;
+		else
+			(*filename) = true;
 		FB_printf(20, ymax - 40, FB_makecol(255,255,255,0),"Lendo o ficheiro %s ...",filename);
 		pthread_create(&tid_app, &tattr_app, startFileRead,(void*)filename);
 	}
