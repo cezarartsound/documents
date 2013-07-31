@@ -29,8 +29,6 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
-#include "libFabio/input/input.h"
-
 #include "GPS/GPS.h"
 
 #include "libFB-0.2.4/FBlib.h"
@@ -144,16 +142,16 @@ void GPSreceive(GPSCoor * c){
 	Coor_destroy(coor);
 }
 
-void moveCars(Coor * origin){
+void moveCars(Coor * origin, bool my){
 	int i;
 	while(exitProgram!=true){
 		if(my_car_id == 0 && origin != NULL)
-			RoadView_update_myCoor(origin);
+			if(my) RoadView_update_myCoor(origin);
 		
 		for(i=0;tracks[i]!=0;i++){
-			if(i+1 == my_car_id)
-				RoadView_update_myCoor(tracks[i]->coor);
-			else
+			if(i+1 == my_car_id){
+				if(my) RoadView_update_myCoor(tracks[i]->coor);
+			}else
 				RoadView_updateCoor(i,tracks[i]->coor);
 			tracks[i] = tracks[i]->next;
 		}
@@ -162,7 +160,8 @@ void moveCars(Coor * origin){
 }
 
 void * startFileRead(void * v){
-	char* filename = (char*)v;
+	bool my =  *((bool*)v);
+	char* filename = (char*)(v+1);
 
 	FILE * file = fopen(filename,"r");
 	if(file == NULL){
@@ -226,7 +225,7 @@ void * startFileRead(void * v){
 
 	fclose(file);
 
-	moveCars(origin);
+	moveCars(origin,my);
 END:
 	// TODO Coor_delete(tracks[i]->coor); free(tracks[i]->next); free(tracks[i]);
 
@@ -296,14 +295,12 @@ void wait_input(){
 				appExit = true;
 				break;
 			case '+':
-				meters -= 20;
-				RoadView_add_meters_visible(meters);
+				meters = RoadView_ZoomIn();
 				sprintf(status,"Zoom in (range: %d m).", METERS_VISIBLE+meters);
 				cor = FB_makecol(0,0,255,0);
 				break;
 			case '-':
-				meters += 20;
-				RoadView_add_meters_visible(meters);
+				meters = RoadView_ZoomOut();
 				sprintf(status,"Zoom out (range: %d m).", METERS_VISIBLE+meters);
 				cor = FB_makecol(0,0,255,0);
 				break;
@@ -335,7 +332,7 @@ void wait_input(){
 
 void print_usage(void)
 {
-    printf("App [-p <port>] [-f <filename>] [-g /dev/<serialport>] [-t] [-h]\n");
+    printf("App [-p <port>] [-f <filename>] [-g /dev/<serialport>] [-t] [-i] [-h]\n");
     printf("  -h : this help\n");
 	printf("  -p : enable receive coordinates of the other vehicles \n"
 		   "       by socket in port indicated\n");
@@ -345,6 +342,7 @@ void print_usage(void)
     printf("  -t : turn on transmition the coordinates of the other\n "
     		"       vehicles by radio\n");
     printf("  -n : no graphics\n");
+    printf("  -i : no touch input\n");
 }
 
 int main (int argc, char **argv){
@@ -357,12 +355,13 @@ int main (int argc, char **argv){
 	int optch;
 	int port = -1;
 	int no_graph = -1;
+	bool no_input = false;
 	char * filename = (char*)malloc(100);
 	char * serialname = (char*)malloc(100);
 	int filer = -1, serialr = -1;
 
 	do {
-	    optch = getopt(argc, argv, "hnt:p:f:g:");
+	    optch = getopt(argc, argv, "hnit:p:f:g:");
 
 	    switch (optch) {
 	        case 'h':
@@ -374,7 +373,7 @@ int main (int argc, char **argv){
 	            break;
 	        case 'f':
 	        	filer = 0;
-	            sscanf(optarg, "%s\0", filename);
+	            sscanf(optarg, "%s", filename+1);
 	            break;
 	        case 'g':
 	        	serialr = 0;
@@ -385,6 +384,9 @@ int main (int argc, char **argv){
 	            break;
 		case 'n':
 	        	no_graph = 1;
+			break;
+		case 'i':
+	        	no_input = true;
 			break;
 	        case -1:
 	            break;
@@ -411,15 +413,17 @@ int main (int argc, char **argv){
 	}else
 		printf("Graphics disable\n");
 	
-	input_init();
-	input_calibration();
-	RoadView_start();
+	RoadView_start(no_input);
 	
 	if(port != -1){
 		showInfo();
 		FB_printf(20, ymax - 40, FB_makecol(255,255,255,0),"Espera de ligacao...    port - %d",port);
 		pthread_create(&tid_app, &tattr_app, startEthernetConnection,(void*)(intptr_t)port);
 	}else if(filer != -1){
+		if(serialr != -1) // ler minhas coordenadas do ficheiro se nao activar o gps
+			(*filename) = false;
+		else
+			(*filename) = true;
 		FB_printf(20, ymax - 40, FB_makecol(255,255,255,0),"Lendo o ficheiro %s ...",filename);
 		pthread_create(&tid_app, &tattr_app, startFileRead,(void*)filename);
 	}

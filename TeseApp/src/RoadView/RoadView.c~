@@ -607,7 +607,6 @@ int getRadius(Position ** p){
 		}		
 		
 		if(state==3){
-			double dif = difRad(p2->d,p1->d);
 			p2 = p2->prev->prev;
 			int d = sqrt(pow(p1->x-p2->x,2) + pow(p1->y-p2->y,2));
 			int r = abs((d/2) / sin(abs(p1->d - p2->d)));
@@ -629,7 +628,7 @@ bool RoadView_caution(Vehicle * v){
 
 	if(angle_dif > 2.79) return false; // >160º = sentido oposto		
 	
-	printf("V = %d , Radius = %d\n",v->id,getRadius(v->pos));
+	printf("V = %d , Radius = %d\n",v->id,getRadius(&(v->pos)));
 
 	attention = safetyZones(v);
 	

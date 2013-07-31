@@ -32,7 +32,13 @@
 #define CAR_L 700  // largura do carro em cm
 #define CAR_W 600 //comprimento do carro em cm
 
-typedef struct _point{int x; int y;} Point;
+#ifndef _POINT_
+#define _POINT_
+typedef struct point_{
+	int x;
+	int y;
+}Point;
+#endif /* _POINT_ */
 
 typedef struct _position{
 	int x; //cm
@@ -79,6 +85,8 @@ void RoadView_update_my(int x_cm, int y_cm, int vel, unsigned int angle);
 
 bool RoadView_caution(Vehicle * v);
 
+int RoadView_ZoomIn(); // return meters visible in board area
+int RoadView_ZoomOut(); // return meters visible in board area
 inline void RoadView_add_meters_visible(int meters);
 void RoadView_redraw();
 

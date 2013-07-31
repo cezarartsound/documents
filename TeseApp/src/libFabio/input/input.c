@@ -23,6 +23,8 @@ static float cal_mx, cal_bx, cal_my, cal_by;
 
 static unsigned char inputstop;
 
+static bool input_initialized = false;
+
 void * input_routine(void * v){
 	int i;
 
@@ -74,14 +76,18 @@ void input_init(){
 	pthread_create(&tid_input, &tattr_input, input_routine,NULL);
 	printf("\nThread input created %d\n",(int)tid_input);
 
+	input_initialized = true;
 }
 
 void input_stop(){
+	input_initialized = false;
 	inputstop = 1;
 	//TODO free all
 }
 
 void input_flush(){
+	if(input_initialized==false) return;
+
 	pthread_mutex_lock(input_mutex);
 	inputs_idx = 0;
 	input_x = input_y = -1;
@@ -90,6 +96,8 @@ void input_flush(){
 }
 
 void input_get_next_point(Point * point){
+	if(input_initialized==false) return;
+
 	pthread_mutex_lock(input_mutex);
 	int i = inputs_idx;
 	input_x = input_y = -1;
@@ -111,6 +119,8 @@ void input_get_next_point(Point * point){
 }
 
 void input_calibration(){
+	if(input_initialized==false) return;
+
 	Point p1, p2;
 
 
@@ -171,12 +181,16 @@ void input_calibration(){
 }
 
 void input_getClickLock(Point * p){
+	if(input_initialized==false) return;
+
 	input_get_next_point(p);
 	p->x = (int)(p->x*cal_mx+cal_bx);
 	p->y = (int)(p->y*cal_my+cal_by);
 }
 
 int input_getClick(Point * p){
+	if(input_initialized==false) return -1;
+
 	int i;
 	pthread_mutex_lock(input_mutex);
 
@@ -192,6 +206,8 @@ int input_getClick(Point * p){
 }
 
 void input_print_values(int nr_values){
+	if(input_initialized==false) return;
+
 	Point p;
 
 	while(nr_values--){

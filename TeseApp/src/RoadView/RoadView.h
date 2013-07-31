@@ -73,7 +73,7 @@ typedef struct _road{
 
 
 
-void RoadView_start();
+void RoadView_start(bool no_input);
 void RoadView_stop();
 
 void RoadView_delete(int vehicle_id);
