@@ -192,6 +192,7 @@ void * startFileRead(void * v){
 				if(getline(&line,&len,file) < 0){fprintf(stderr,"Error loading origin from file %s.\n", filename); goto END;}
 				origin = Coor_new0();
 				Coor_parce_str(line,origin);
+				origin->vel = 50;
 				//RoadView_update_my(0,0,0,origin->asimuth);
 				RoadView_update_myCoor(origin);
 				break;
@@ -332,7 +333,7 @@ void wait_input(){
 
 void print_usage(void)
 {
-    printf("App [-p <port>] [-f <filename>] [-g /dev/<serialport>] [-t] [-i] [-h]\n");
+    printf("App [-p <port>] [-f <filename>] [-g /dev/<serialport>] [-t] [-c] [-h]\n");
     printf("  -h : this help\n");
 	printf("  -p : enable receive coordinates of the other vehicles \n"
 		   "       by socket in port indicated\n");
@@ -342,7 +343,7 @@ void print_usage(void)
     printf("  -t : turn on transmition the coordinates of the other\n "
     		"       vehicles by radio\n");
     printf("  -n : no graphics\n");
-    printf("  -i : no touch input\n");
+    printf("  -c : calibrate touch input on start (dev/input/event0)\n");
 }
 
 int main (int argc, char **argv){
@@ -355,13 +356,13 @@ int main (int argc, char **argv){
 	int optch;
 	int port = -1;
 	int no_graph = -1;
-	bool no_input = false;
+	bool input_cal = false;
 	char * filename = (char*)malloc(100);
 	char * serialname = (char*)malloc(100);
 	int filer = -1, serialr = -1;
 
 	do {
-	    optch = getopt(argc, argv, "hnit:p:f:g:");
+	    optch = getopt(argc, argv, "hnct:p:f:g:");
 
 	    switch (optch) {
 	        case 'h':
@@ -385,8 +386,8 @@ int main (int argc, char **argv){
 		case 'n':
 	        	no_graph = 1;
 			break;
-		case 'i':
-	        	no_input = true;
+		case 'c':
+	        	input_cal = true;
 			break;
 	        case -1:
 	            break;
@@ -413,7 +414,7 @@ int main (int argc, char **argv){
 	}else
 		printf("Graphics disable\n");
 	
-	RoadView_start(no_input);
+	RoadView_start(input_cal);
 	
 	if(port != -1){
 		showInfo();

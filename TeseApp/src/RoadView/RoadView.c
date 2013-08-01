@@ -22,6 +22,8 @@
 
 Road * road = 0;
 
+int xmax, ymax;
+
 static pthread_attr_t tattr;
 static pthread_t tid;
 
@@ -37,6 +39,11 @@ static Position my_pos;
 
 static bool warning;
 static BITMAP * warning_bmp;
+
+void printStatus(char*text){
+	FB_rectfill(10, ymax - 10, xmax , ymax - 40 ,FB_makecol(0,0,0,0));
+	FB_printf(20, ymax - 40, FB_makecol(0,255,0,0),text);
+}
 
 bool verifyX(int x){
 	if(x<table_location.x+ARROW_RAD || x>table_location.x + table_length.x - ARROW_RAD) return false;
@@ -346,17 +353,18 @@ int RoadView_ZoomIn(){
 	return (int)(meters_per_pixel * table_length.y);
 }
 
-void RoadView_start(bool no_input) {
+void RoadView_start(bool input_cal) {
 	
 	event_init();
 	
-	if(no_input==false){
-		input_init();
+	input_init();
+
+	if(input_cal==true)
 		input_calibration();
-	}	
 	
 	widget_init();
-
+	
+	FB_getres(&xmax,&ymax);
 
 	warning = false;
 
@@ -563,12 +571,11 @@ void warning_trow(){
 	}
 }
 
-double difRad(double ai, double af){
+double absDifRad(double ai, double af){
 	double a = af - ai;
+	if(a<0) a*=-1;
 	if(a>PI)
 		return 2*PI - a;
-	if(a<-PI)
-		return -2*PI - a;
 	return a;
 }
 
@@ -576,10 +583,22 @@ double difRad(double ai, double af){
 #define CURVE_ANGLE_DIF_DETECTION (10*PI/180) //rad to step states
 #define CURVE_ANGLE_DIF_PERCENT 0.1 // percent of a curve rad to take begin and end of curve
 #define CURVE_ANGLE_MIN (20*PI/180) //rad to considerate a valid curve
+#define CURVE_MAX_RAD 10000 // 100 meters
 
-int getRadius(Position ** p){
-	Position * last = (*p);
+typedef struct _curve{
+	int R; // raio, cm
+	int vel; // vel mean, km/h
+	int x;
+	int y;
+}Curve;
+
+int getCurve(Position * p, Curve * c){
+	if(p==NULL) return -1;
+	Position * last = p;
+	if(last->next == NULL || last->next->next == NULL) return -1;
 	Position * pos = last->next->next; // second most old
+	
+	int vel, count;
 	int state = 1;
 	
 	Position * p1, * p2;
@@ -592,14 +611,17 @@ int getRadius(Position ** p){
 			case 1:
 				if(pos->vel < CURVE_VEL_MIN_VALID)
 					break;
-				if(abs(difRad(lastAngle,pos->d))>CURVE_ANGLE_DIF_DETECTION){
+				if(absDifRad(lastAngle,pos->d)>CURVE_ANGLE_DIF_DETECTION){
 						p1 = pos->prev->prev;
+						count = 3;
+						vel = pos->vel + pos->prev->vel + p1->vel;
 						state = 2;			
 				}
 				break;
 			case 2:
-				
-				if(abs(difRad(lastAngle,pos->d))>CURVE_ANGLE_DIF_DETECTION){
+				vel += pos->vel;
+				count++;
+				if(absDifRad(lastAngle,pos->d)>CURVE_ANGLE_DIF_DETECTION){
 					if(p1!=pos->prev && p1!=pos->prev->prev){
 						p2 = pos;
 						state = 3;
@@ -611,9 +633,12 @@ int getRadius(Position ** p){
 		if(state==3){
 			p2 = p2->prev->prev;
 			int d = sqrt(pow(p1->x-p2->x,2) + pow(p1->y-p2->y,2));
-			int r = abs((d/2) / sin(abs(p1->d - p2->d)));
-			(*p) = p1;
-			return r;	
+			c->R = fabs((d/2) / sin(fabs(p1->d - p2->d)));
+			if(c->R>CURVE_MAX_RAD) return -1;
+			c->vel = vel/count;
+			c->x = p1->x;
+			c->y = p1->y;
+			return  0;	
 		}
 			
 		lastAngle = pos->d;
@@ -622,6 +647,7 @@ int getRadius(Position ** p){
 	return -1;
 }
 
+char str[100];  //TODO delete
 bool RoadView_caution(Vehicle * v){
 	bool attention = false;
 
@@ -629,8 +655,13 @@ bool RoadView_caution(Vehicle * v){
 	if(angle_dif > atan(1)*4) angle_dif = 2*4*atan(1)-angle_dif;
 
 	if(angle_dif > 2.79) return false; // >160º = sentido oposto		
-	
-	printf("V = %d , Radius = %d\n",v->id,getRadius(&(v->pos)));
+	if(v->id==2){
+		Curve c; 
+		if(getCurve(v->pos, &c)==0){	
+			sprintf(str,"V = %d , Radius = %d cm , Vel = %d km/h\n",v->id,c.R,c.vel);
+			printStatus(str);	
+		}
+	}
 
 	attention = safetyZones(v);
 	
