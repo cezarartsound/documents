@@ -53,8 +53,8 @@ void * input_routine(void * v){
 	return 0;
 }
 
-void input_init(){
-	input_fd = fopen("/dev/input/event1","r");
+void input_init(char * input_dev){
+	input_fd = fopen(input_dev,"r");
 
 	if(input_fd>0)
 		printf("Input on\r\n");

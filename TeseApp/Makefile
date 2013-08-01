@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS= -g -O0 -pthread -Wall -Wextra -Wno-unused-parameter
+CFLAGS= -g -O0 -pthread -Wall #-Wextra 
 MAIN_IN = src/App.c
 MAIN_OUT = build/App
 

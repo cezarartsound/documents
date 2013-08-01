@@ -222,7 +222,7 @@ void * startFileRead(void * v){
 	}
 
 	FB_rectfill(10, ymax - 10, 200, ymax - 40 ,FB_makecol(0,0,0,0));
-	FB_printf(20, ymax - 40, FB_makecol(0,255,0,0),"File %s readed.",filename);
+	FB_printf(20, ymax - 40, FB_makecol(0,255,0,0),"File readed.");
 
 	fclose(file);
 
@@ -232,7 +232,6 @@ END:
 
 	if(origin != NULL) free(origin);
 
-	free(filename);
 	return 0;
 }
 
@@ -333,17 +332,23 @@ void wait_input(){
 
 void print_usage(void)
 {
-    printf("App [-p <port>] [-f <filename>] [-g /dev/<serialport>] [-t] [-c] [-h]\n");
-    printf("  -h : this help\n");
+    	printf("App [-p <port>] [-f <filename>] [-g /dev/<serialport>] [-i /dev/input/<inputdev>] [-t] [-c] [-h]\n");
+    	printf("  -h : this help\n");
 	printf("  -p : enable receive coordinates of the other vehicles \n"
 		   "       by socket in port indicated\n");
-    printf("  -f : file with the coordinates of the other vehicles, \n"
+    	printf("  -f : file with the coordinates of the other vehicles, \n"
     		"       without -g option current position is origin in file\n");
-    printf("  -g : turn on the GPS, in serial port indicated\n");
-    printf("  -t : turn on transmition the coordinates of the other\n "
+    	printf("  -g : turn on the GPS, in serial port indicated\n");
+    	printf("  -t : turn on transmition the coordinates of the other\n "
     		"       vehicles by radio\n");
-    printf("  -n : no graphics\n");
-    printf("  -c : calibrate touch input on start (dev/input/event0)\n");
+    	printf("  -n : no graphics\n");
+	printf("  -i : select touch input device (default: /dev/input/event1)\n");
+    	printf("  -c : calibrate touch input on start \n");
+	printf("\nExamples:\n"
+		"  sudo ./App -f /tracks/bairro.tck\n"
+		"  sudo ./App -i /dev/input/event0 -c -g -f /tracks/bairro.tck\n"
+		"  sudo ./App -p 1234\n"
+		"  sudo ./App -t -p 1234\n");
 }
 
 int main (int argc, char **argv){
@@ -357,12 +362,13 @@ int main (int argc, char **argv){
 	int port = -1;
 	int no_graph = -1;
 	bool input_cal = false;
-	char * filename = (char*)malloc(100);
-	char * serialname = (char*)malloc(100);
+	char filename[100];	
+	char serialname[100];
+	char inputdev[100] = "/dev/input/event1";
 	int filer = -1, serialr = -1;
 
 	do {
-	    optch = getopt(argc, argv, "hnct:p:f:g:");
+	    optch = getopt(argc, argv, "hnct:p:f:g:i:");
 
 	    switch (optch) {
 	        case 'h':
@@ -386,6 +392,9 @@ int main (int argc, char **argv){
 		case 'n':
 	        	no_graph = 1;
 			break;
+	        case 'i':
+	            sscanf(optarg, "%s", inputdev);
+	            break;
 		case 'c':
 	        	input_cal = true;
 			break;
@@ -414,7 +423,7 @@ int main (int argc, char **argv){
 	}else
 		printf("Graphics disable\n");
 	
-	RoadView_start(input_cal);
+	RoadView_start(input_cal,inputdev);
 	
 	if(port != -1){
 		showInfo();
@@ -422,10 +431,10 @@ int main (int argc, char **argv){
 		pthread_create(&tid_app, &tattr_app, startEthernetConnection,(void*)(intptr_t)port);
 	}else if(filer != -1){
 		if(serialr != -1) // ler minhas coordenadas do ficheiro se nao activar o gps
-			(*filename) = false;
+			filename[0] = false;
 		else
-			(*filename) = true;
-		FB_printf(20, ymax - 40, FB_makecol(255,255,255,0),"Lendo o ficheiro %s ...",filename);
+			filename[0] = true;
+		FB_printf(20, ymax - 40, FB_makecol(255,255,255,0),"Lendo o ficheiro ...");
 		pthread_create(&tid_app, &tattr_app, startFileRead,(void*)filename);
 	}
 
@@ -433,9 +442,6 @@ int main (int argc, char **argv){
 		GPS_init(serialname,GPSreceive);
 
 	wait_input();
-
-	free(filename);
-	free(serialname);
 
 	RoadView_stop();
 

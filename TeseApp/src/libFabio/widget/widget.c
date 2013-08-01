@@ -22,7 +22,7 @@ void widget_init(){
 }
 
 void widget_initall(){
-	input_init();
+	input_init("/dev/input/event1");
 	event_init();
 	widget_init();
 }

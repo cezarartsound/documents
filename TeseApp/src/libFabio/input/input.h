@@ -20,7 +20,7 @@ typedef struct point_{
 
 
 
-void input_init(); // inicia uma thread
+void input_init(char * input_dev); // inicia uma thread
 void input_stop(); // parar a thread e fazer frees
 void input_calibration();//pressupoe chamada ao VGA_init prévia, desenha janela de calibraçao
 void input_getClickLock(Point * p);

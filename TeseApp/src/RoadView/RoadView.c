@@ -353,11 +353,11 @@ int RoadView_ZoomIn(){
 	return (int)(meters_per_pixel * table_length.y);
 }
 
-void RoadView_start(bool input_cal) {
+void RoadView_start(bool input_cal, char * input_dev) {
 	
 	event_init();
 	
-	input_init();
+	input_init(input_dev);
 
 	if(input_cal==true)
 		input_calibration();
