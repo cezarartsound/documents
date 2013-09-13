@@ -5,7 +5,8 @@ LIBS = -lusb-1.0
 
 VPATH = src:build:include
 
-OBJECTS =  cleanup_queues itdsrc itdsrc_daemon itdsrc_protocol itdsrc_daemon_loopback hostlink_protocol
+OBJECTS =  cleanup_queues itdsrc_daemon hostlink_protocol itdsrc_protocol itdsrc_daemon_loopback itdsrc
+    
 
 
 %.o: %.c
