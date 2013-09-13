@@ -4,8 +4,3 @@ all:
 	make -C userspacemac
 	cp userspacedriver/build/itdsrc.o .
 	cp userspacemac/build/itdsrc_mac.o .
-
-clean:
-	rm userspacedriver/build/*
-	rm userspacemac/build/*
-
