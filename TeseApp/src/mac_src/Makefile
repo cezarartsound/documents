@@ -2,14 +2,11 @@ CC=gcc
 CFLAGS=-Wall -Wextra -Wno-unused-parameter
 LDFLAGS=-pthread -lrt
 
-TCPLIB_LIB=build/libtcplib.a
-TCPLIB_HDR=src/so_tcplib/
-
 ITDSRC_LIB=build/libitdsrc.a
-ITDSRC_HDR=src/userspacedriver/include/
+ITDSRC_HDR=userspacedriver/include/
 
 ITDSRC_MAC_LIB=build/libitdsrc_mac.a
-ITDSRC_MAC_HDR=src/userspacemac/include/
+ITDSRC_MAC_HDR=userspacemac/include/
 
 SRS_CFLAGS=${CFLAGS} -I ${TCPLIB_HDR} -I ${GRAPHX_HDR} -I ${ITDSRC_HDR} -I ${ITDSRC_MAC_HDR}
 SRS_LDFLAGS=${LDFLAGS} -L build/ -l itdsrc_mac -l itdsrc
@@ -23,22 +20,18 @@ itdsrc: ${ITDSRC_MAC_LIB} ${ITDSRC_LIB}
 
 srs: ${ITDSRC_MAC_LIB} ${ITDSRC_LIB} ${GRAPHX_LIB} ${TCPLIB_LIB}
 
-build/itdsrc-%: src/itdsrc-%.c
+build/itdsrc-%: itdsrc-%.c
 	${CC} ${ITDSRC_CFLAGS} $^ -o $@ ${ITDSRC_LDFLAGS}
 
-${TCPLIB_LIB}: setup
-	make -C src/so_tcplib/
-	cp src/so_tcplib/build/libtcplib.a build/
-
 ${ITDSRC_LIB}: setup
-	make -C src/userspacedriver/
-	cp src/userspacedriver/build/libitdsrc.a build/
-	cp src/userspacedriver/build/itdsrc_daemon build/
-	cp src/userspacedriver/build/itdsrc_daemon_loopback build/
+	make -C userspacedriver/
+	cp userspacedriver/build/libitdsrc.a build/
+	cp userspacedriver/build/itdsrc_daemon build/
+	cp userspacedriver/build/itdsrc_daemon_loopback build/
 
 ${ITDSRC_MAC_LIB}: setup
-	make -C src/userspacemac/
-	cp src/userspacemac/build/libitdsrc_mac.a build/
+	make -C userspacemac/
+	cp userspacemac/build/libitdsrc_mac.a build/
 
 setup: build/
 
@@ -55,10 +48,8 @@ install: itdsrc-obu itdsrc-rsu srs-obu srs-rsu
 	install build/itdsrc_daemon_loopback ${DESTDIR}/usr/bin/
 
 clean:
-	make -C src/GraphicInterface/ clean
-	make -C src/so_tcplib/ clean
-	make -C src/userspacemac/ clean
-	make -C src/userspacedriver/ clean
+	make -C userspacemac/ clean
+	make -C userspacedriver/ clean
 	rm -f ./build/*.a
 
 distclean: clean
