@@ -1,16 +1,19 @@
 
 
 
-all:
+all: build/
 	make -C userspacedriver
 	make -C userspacemac
-	cp userspacedriver/build/itdsrc.o .
-	cp userspacemac/build/itdsrc_mac.o .
-	cp userspacedriver/build/itdsrc_daemon .
-	cp userspacedriver/build/itdsrc_daemon_loopback .
+	cp userspacedriver/build/itdsrc.o ./build
+	cp userspacemac/build/itdsrc_mac.o ./build
+	cp userspacedriver/build/itdsrc_daemon ./build
+	cp userspacedriver/build/itdsrc_daemon_loopback ./build
 	
+build/:
+	mkdir -p build
+
 clean:
 	make -C userspacedriver clean
 	make -C userspacemac clean
-	rm itdsrc.o itdsrc_mac.o itdsrc_daemon itdsrc_daemon_loopback
+	rm -rf ./build
 	

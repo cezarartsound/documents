@@ -59,7 +59,7 @@ install: daemon daemon_loopback lib
 	install build/itdsrc_daemon build/itdsrc_daemon_loopback ${DESTDIR}/usr/bin/
 
 clean:
-	rm ./build/*
+	rm -rf ./build
 
 distclean:
 	rm -rf ./build
