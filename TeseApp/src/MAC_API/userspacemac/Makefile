@@ -30,7 +30,7 @@ install: itdsrc_mac
 	install include/itdsrc_mac.h ${DESTDIR}/usr/include/
 
 clean:
-	rm -f ./build/*.o
+	rm ./build/*
 
 distclean:
 	rm -rf ./build
