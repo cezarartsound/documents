@@ -35,5 +35,6 @@ clean:
 	rm -f $(OBJECTS)
 	rm -f $(MAIN_OUT)
 	rm -f $(MAC_API)
-	rm -f build/$(FBLIB)  
+	make -C $(MAC_API_PATH) clean
+	make -C $(FBLIB_PATH) clean
 	

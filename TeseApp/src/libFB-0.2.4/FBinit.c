@@ -44,7 +44,7 @@ int FB_initlib(char *dev)
 	ioctl_err = ioctl(fbufd,FBIOGET_VSCREENINFO,&backup_var_info);
 	// Get changeable variable infos 
 	ioctl_err = ioctl(fbufd,FBIOGET_VSCREENINFO,&work_var_info);
-/*	if(ioctl_err < 0)
+	if(ioctl_err < 0)
 	{
 		errstr=strerror(errno);
 		fprintf(stderr,"FBlib:ioctl FBIOGET_VSCREENINFO failed: %s \n",errstr);
@@ -95,7 +95,7 @@ int FB_initlib(char *dev)
 
 	inc_x = work_var_info.bits_per_pixel/8;
 	inc_y = fb_fix_info.line_length;
-*/
+
 	return OK;
 }
 

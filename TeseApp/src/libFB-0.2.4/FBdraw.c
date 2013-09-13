@@ -289,9 +289,9 @@ void FB_clear_screen(FB_pixel color)
 	char *pos=0;
 	int i,j;
 	
-	for(i = 0; i < work_var_info.yres-1; i++)
+	for(i = 0; i < work_var_info.yres; i++)
 	{
-		for(j = 0; j < work_var_info.xres-1; j++ )
+		for(j = 0; j < work_var_info.xres; j++ )
 		{
 			setpixel(pos,color);
 			pos+=inc_x;
@@ -300,4 +300,5 @@ void FB_clear_screen(FB_pixel color)
 	}
 
 	return;
+
 }
