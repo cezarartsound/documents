@@ -1,6 +1,6 @@
 CC=gcc 
 override CFLAGS+=-Wall -Wextra -Wno-unused-parameter -Wno-format-extra-args -I ./include/ -I ./src/
-override LDFLAGS+=-pthread -lrt
+override LDFLAGS+=-pthread -lrt -usb-1.0
 
 DAEMON_BIN=./build/itdsrc_daemon
 DAEMON_OBJS=./build/itdsrc_daemon.o
