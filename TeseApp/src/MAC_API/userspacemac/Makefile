@@ -1,5 +1,5 @@
 CC=gcc 
-override CFLAGS+=-Wall -Wextra -Wno-unused-parameter -Wno-format-extra-args -I ./include/
+override CFLAGS+=-Wall -Wextra -Wno-unused-parameter -Wno-format-extra-args -I ./include/ -I ../userspacedriver/include
 override LDFLAGS+=-pthread -lrt
 
 ITDSRC_MAC_LIB=build/libitdsrc_mac.a
