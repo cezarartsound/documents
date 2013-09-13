@@ -6,6 +6,8 @@ all:
 	cp userspacemac/build/itdsrc_mac.o .
 
 clean:
+	make -C userspacedriver clean
+	make -C userspacemac clean
 	rm userspacedriver/build/*
 	rm userspacemac/build/*
 
