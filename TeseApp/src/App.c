@@ -419,9 +419,9 @@ int main (int argc, char **argv){
 		return -1;
 	}
 
-	if(no_graph  == -1){
+//	if(no_graph  == -1){
 		FB_initlib ("/dev/fb0");
-		FB_change_font("font");
+/*		FB_change_font("font");
 	
 		FB_getres(&xmax,&ymax);
 		printf("Resolution %dx%d\n",xmax,ymax);
@@ -446,7 +446,7 @@ int main (int argc, char **argv){
 
 	if(serialr != -1)
 		GPS_init(serialname,GPSreceive);
-
+*/
 	wait_input();
 
 	RoadView_stop();
