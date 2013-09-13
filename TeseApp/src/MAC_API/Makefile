@@ -10,4 +10,3 @@ clean:
 	make -C userspacemac clean
 	rm userspacedriver/build/*
 	rm userspacemac/build/*
-
