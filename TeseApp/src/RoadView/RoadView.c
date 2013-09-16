@@ -36,6 +36,7 @@ static Point table_location;
 static Point table_length;
 
 static Position my_pos;
+static Coor my_coor;
 
 static bool warning;
 static BITMAP * warning_bmp;
@@ -292,6 +293,7 @@ void RoadView_update_my(int x_cm,int y_cm, int vel, unsigned int angle){
 }
 
 void RoadView_update_myCoor(Coor * c){
+	memcpy(&my_coor,c,sizeof(Coor));
 	Coor_utmCalc(c);
 	RoadView_update_my( c->x, c->y, c->vel, c->asimuth);
 }

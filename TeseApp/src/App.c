@@ -37,13 +37,6 @@
 #include "Coor.h"
 
 
-typedef struct _CoorList{
-	Coor * coor;
-	struct _CoorList * next;
-}CoorList;
-
-#define TRACKS_NR 20
-CoorList * tracks[TRACKS_NR];
 
 bool exitProgram;
 int ymax, xmax;
@@ -51,7 +44,13 @@ int ymax, xmax;
 static pthread_attr_t tattr_app;
 static pthread_t tid_app;
 
-static int my_car_id = 0; // id do meu carro lido do ficheiro, 0 no caso das coordenadas virem do gps
+
+
+
+
+
+/* -----ETHERNET------------------------ */
+
 
 int byteArray2int(unsigned char * array){
 	return ((((int)array[3])<<(3*8)) | (((int)array[2])<<(2*8)) | (((int)array[1])<<(8)) | (array[0]));
@@ -97,6 +96,49 @@ void* receiveData(void *v){
 	return 0;
 }
 
+int showInfo(){
+	char str[100];
+	int s;
+	struct ifconf ifconf;
+	struct ifreq ifr[50];
+	int ifs;
+	int i;
+
+	s = socket(AF_INET, SOCK_STREAM, 0);
+	if (s < 0) {
+		perror("socket");
+		return 0;
+	}
+
+	ifconf.ifc_buf = (char *) ifr;
+	ifconf.ifc_len = sizeof ifr;
+
+	if (ioctl(s, SIOCGIFCONF, &ifconf) == -1) {
+		perror("ioctl");
+		return 0;
+	}
+
+	ifs = ifconf.ifc_len / sizeof(ifr[0]);
+	//printf("interfaces = %d:\n", ifs);
+	for (i = 1; i < ifs; i++) {
+		char ip[INET_ADDRSTRLEN];
+		struct sockaddr_in *s_in = (struct sockaddr_in *) &ifr[i].ifr_addr;
+
+		if (!inet_ntop(AF_INET, &s_in->sin_addr, ip, sizeof(ip))) {
+			perror("inet_ntop");
+			return 0;
+		}
+
+		sprintf(str,"%s - %s", ifr[i].ifr_name, ip);
+		printf("%s\n",str);
+		FB_printf(350+100*(i-1), ymax - 40, FB_makecol(255,255,255,0),str);
+	}
+
+	close(s);
+
+	return 1;
+}
+
 void * startEthernetConnection(void * v){
 	int port = (int)(intptr_t)v;
 
@@ -136,11 +178,50 @@ void * startEthernetConnection(void * v){
 	return 0;
 }
 
+
+/* -----ETHERNET END------------------------ */
+
+
+
+
+
+
+
+
+
+
+
+
+/* -----GPS-------------------------------------- */
+
 void GPSreceive(GPSCoor * c){
 	Coor * coor = Coor_new2(c->lon_deg,c->lon_min,0,c->lat_deg,c->lat_min,0,c->asimuth,c->speed);
 	RoadView_update_myCoor(coor);
 	Coor_destroy(coor);
 }
+
+/* -----GPS END-------------------------------------- */
+
+
+
+
+
+
+
+
+
+
+/* ----FILE------------------------ */
+
+typedef struct _CoorList{
+	Coor * coor;
+	struct _CoorList * next;
+}CoorList;
+
+#define TRACKS_NR 20
+CoorList * tracks[TRACKS_NR];
+
+static int my_car_id = 0; // id do meu carro lido do ficheiro, 0 no caso das coordenadas virem do gps
 
 void moveCars(Coor * origin, bool my){
 	int i;
@@ -235,48 +316,100 @@ END:
 	return 0;
 }
 
-int showInfo(){
-	char str[100];
-	int s;
-	struct ifconf ifconf;
-	struct ifreq ifr[50];
-	int ifs;
-	int i;
+/* -----FILE END------------------------- */
 
-	s = socket(AF_INET, SOCK_STREAM, 0);
-	if (s < 0) {
-		perror("socket");
-		return 0;
-	}
 
-	ifconf.ifc_buf = (char *) ifr;
-	ifconf.ifc_len = sizeof ifr;
 
-	if (ioctl(s, SIOCGIFCONF, &ifconf) == -1) {
-		perror("ioctl");
-		return 0;
-	}
 
-	ifs = ifconf.ifc_len / sizeof(ifr[0]);
-	//printf("interfaces = %d:\n", ifs);
-	for (i = 1; i < ifs; i++) {
-		char ip[INET_ADDRSTRLEN];
-		struct sockaddr_in *s_in = (struct sockaddr_in *) &ifr[i].ifr_addr;
 
-		if (!inet_ntop(AF_INET, &s_in->sin_addr, ip, sizeof(ip))) {
-			perror("inet_ntop");
-			return 0;
-		}
 
-		sprintf(str,"%s - %s", ifr[i].ifr_name, ip);
-		printf("%s\n",str);
-		FB_printf(350+100*(i-1), ymax - 40, FB_makecol(255,255,255,0),str);
-	}
 
-	close(s);
 
-	return 1;
+
+
+
+
+/* -------RX----------------------------------------- */
+
+#include "itdsrc_mac.h"
+
+#define RF_INTERVAL_MS 500
+
+struct ma_dev *dev;
+
+char data[100];
+uint16_t data_length;
+
+static bool done;
+static bool rip;
+int rx_good;
+static bool tip;
+static uint8_t mac_addr[6];
+
+void indication_cb(const struct ma_unitdata_indication *indication)
+{
+	//printf("Status indication: %u.\n", indication->transmission_status);
 }
+
+void status_indication_cb(const struct ma_unitdata_status_indication *indication)
+{
+	//printf("Status indication: %u.\n", indication->transmission_status);
+}
+
+void xstatus_indication_cb(const struct ma_unitdatax_status_indication *indication)
+{
+	// TODO receive
+}
+
+void startRF(void * arg){
+	unsigned int tid = (((unsigned int)arg) >> 16) & 255;
+	unsigned int tpower = (((unsigned int)arg) >> 8) & 255;
+	unsigned int tmodulation = ((unsigned int)arg) & 255;
+	
+	uint8_t mac_addr1[6];
+	mac_addr1[0] = 255;
+	mac_addr1[1] = 255;
+	mac_addr1[2] = 255;
+	mac_addr1[3] = 255;
+	mac_addr1[4] = 255;
+	mac_addr1[5] = 255;
+
+	uint8_t mac_addr[6];
+	mac_addr[0] = 0;
+	mac_addr[1] = 0;
+	mac_addr[2] = 0;
+	mac_addr[3] = 0;
+	mac_addr[4] = 0;
+	mac_addr[5] = (uint8_t) tid;
+		
+		
+	while(1){
+	
+		// TODO make data
+	
+		retval = ma_unitdatax_request(dev, mac_addr,
+				mac_addr1, (uint8_t *) data, (uint16_t) data_length, 0, 0, 0, (uint8_t)tmodulation, (uint8_t)tpower, 0);
+
+		if (retval != 0) {
+			printf("ma_unitdatax_request failed: %s\n", strerror(retval));
+		}
+		usleep(RF_INTERVAL_MS*1000);
+	}
+}
+
+/* -------RX END----------------------------------------- */
+
+
+
+
+
+
+
+
+
+
+
+/* -----APP----------------------------------------*/
 
 void wait_input(){
 	bool appExit = false;
@@ -338,7 +471,7 @@ void wait_input(){
 
 void print_usage(void)
 {
-    	printf("App [-p <port>] [-f <filename>] [-g /dev/<serialport>] [-i /dev/input/<inputdev>] [-t] [-c] [-h]\n");
+    	printf("App [-p <port>] [-f <filename>] [-g /dev/<serialport>] [-i /dev/input/<inputdev>] [-t <id>] [-P <power>] [-c] [-h]\n");
     	printf("  -h : this help\n");
 	printf("  -p : enable receive coordinates of the other vehicles \n"
 		   "       by socket in port indicated\n");
@@ -346,7 +479,9 @@ void print_usage(void)
     		"       without -g option current position is origin in file\n");
     	printf("  -g : turn on the GPS, in serial port indicated\n");
     	printf("  -t : turn on transmition the coordinates of the other\n "
-    		"       vehicles by radio\n");
+    		"       vehicles by radio, must indicated an id number\n");
+    	printf("  -P : transmission power (0), only used with -t command\n");
+    	printf("  -M : transmission modulation (3), only used with -t command\n");
     	printf("  -n : no graphics\n");
 	printf("  -i : select touch input device (default: /dev/input/event1)\n");
     	printf("  -c : calibrate touch input on start \n");
@@ -365,7 +500,8 @@ int main (int argc, char **argv){
 	return 0;
 */
 	int optch;
-	int port = -1;
+	unsigned int port = -1, tpower = -1, tmodulation = -1;
+	int tid = -1;
 	int no_graph = -1;
 	bool input_cal = false;
 	char filename[100];	
@@ -374,7 +510,7 @@ int main (int argc, char **argv){
 	int filer = -1, serialr = -1;
 
 	do {
-	    optch = getopt(argc, argv, "hnct:p:f:g:i:");
+	    optch = getopt(argc, argv, "hnc:p:f:g:i:t:P:M:");
 
 	    switch (optch) {
 	        case 'h':
@@ -393,32 +529,52 @@ int main (int argc, char **argv){
 	            sscanf(optarg, "%s", serialname);
 	            break;
 	        case 't':
-	        	printf("-t option not yet implemented."); //TODO
+	            sscanf(optarg, "%d", &tid);
 	            break;
-		case 'n':
-	        	no_graph = 1;
-			break;
-	        case 'i':
-	            sscanf(optarg, "%s", inputdev);
+	        case 'P':
+	            sscanf(optarg, "%d", &tpower);
 	            break;
-		case 'c':
-	        	input_cal = true;
-			break;
-	        case -1:
+	        case 'M':
+	            sscanf(optarg, "%d", &tmodulation);
 	            break;
-	        default:
-	            print_usage();
-	            return -1;
-	            break;
+			case 'n':
+					no_graph = 1;
+					break;
+			case 'i':
+				sscanf(optarg, "%s", inputdev);
+				break;
+			case 'c':
+					input_cal = true;
+					break;
+			case -1:
+				break;
+			default:
+				print_usage();
+				return -1;
+				break;
 	    }
 	} while (optch != -1);
 
-	if((port == -1 && filer == -1) || (port != -1 && filer != -1)){
-		fprintf(stderr, "Port or filename must be indicated.\n");
+	if((port == -1 && filer == -1) || (port != -1 && filer != -1) || tid != -1){
+		fprintf(stderr, "Port, filename or transmission id must be indicated.\n");
 		print_usage();
 		return -1;
 	}
 
+	if (tmodulation == -1) tmodulation = 3;
+	else if((tmodulation > 7) || (tmodulation < 0)) {
+		fprintf(stderr, "Modulation must be positive and not exceed %d\n", 7);
+		print_usage();
+		return -1;
+	}
+
+	if (tpower == -1) tpower = 0;
+	else if ((tpower > 63) || (tpower < 0)) {
+		fprintf(stderr, "Power must be positive and not exceed %d\n", 63);
+		print_usage();
+		return -1;
+	}
+	
 	if(no_graph  == -1){
 		FB_initlib ("/dev/fb0");
 		FB_change_font("font");
@@ -432,16 +588,34 @@ int main (int argc, char **argv){
 	RoadView_start(input_cal,inputdev);
 	
 	if(port != -1){
+	
 		showInfo();
 		FB_printf(20, ymax - 40, FB_makecol(255,255,255,0),"Espera de ligacao...    port - %d",port);
 		pthread_create(&tid_app, &tattr_app, startEthernetConnection,(void*)(intptr_t)port);
+		
 	}else if(filer != -1){
+	
 		if(serialr != -1) // ler minhas coordenadas do ficheiro se nao activar o gps
 			filename[0] = false;
 		else
 			filename[0] = true;
 		FB_printf(20, ymax - 40, FB_makecol(255,255,255,0),"Lendo o ficheiro ...");
 		pthread_create(&tid_app, &tattr_app, startFileRead,(void*)filename);
+		
+	}else if(tid != -1){
+	
+		int retval = ma_init(0, &dev, &indication_cb, &status_indication_cb, &xstatus_indication_cb);
+		if (retval != 0) {
+			fprintf(stderr, "ERROR: failed to initialize mac layer: %s.\n", strerror(retval));
+			return -1;
+		}
+		FB_printf(20, ymax - 40, FB_makecol(255,255,255,0),"Recebendo e enviando via RF ...");
+		pthread_create(&tid_app, &tattr_app, startRF,(void*)(tid<<16 | tpower<<8 | tmodulation));
+		
+	}else {
+		fprintf(stderr, "Port, filename or transmission id must be indicated.\n");
+		print_usage();
+		return -1;
 	}
 
 	if(serialr != -1)
@@ -449,6 +623,9 @@ int main (int argc, char **argv){
 
 	wait_input();
 
+	if(tid != -1) 
+		ma_stop(dev);
+		
 	RoadView_stop();
 
 	FB_clear_screen (FB_makecol (0,0,0,0));
@@ -460,4 +637,8 @@ int main (int argc, char **argv){
 
 	return 0;
 }
+
+
+/* -----APP END----------------------------------------*/
+
 
