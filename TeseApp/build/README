@@ -1,0 +1,32 @@
+To build just do:
+
+After making, the build directory will contain the following binaries:
+	itdsrc_daemon : daemon that must be running when a real board is connected
+	to the system
+
+	itdsrc_daemon_loopback: daemon that may be used to test the software without
+	a real board and that emulates the behaviour of a board (not thoroughly
+	tested)
+
+	App: main program
+
+All applications have a -h flag that may be used to call for help:
+   ./App -h
+
+An example setup, comprising of two boards is as follows:
+        board 1 (RSU):
+	   itdsrc_daemon (leave it running in the background)
+		App -d 0 -p 50
+	board 2 (OBU):
+	   itdsrc_daemon (leave it running in the background)
+		App -d 0
+	
+	In this setup, board 1 receives the speed from the sensors and sends it to
+	the air, with device 0 as destination. Board 2, that has id 0, receives the
+	frame and presents it in the screen.
+
+
+Note that in all experiments, the used power was 50. Adapt to your needs. More
+parameters are available on the obu and rsu. Adapt to your needs, allways
+making shure that the options match between all the applications that are
+running at any given time.

@@ -1,0 +1,5 @@
+FILES:
+	font - is a psf.gz file that is used on graphical interface
+	iso01.f14.psf.gz - is a backup font that works on program
+	images - folder with images files that is used on graphical interface
+	tracks - folder with real trajectories files
