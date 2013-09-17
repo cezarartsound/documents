@@ -333,12 +333,9 @@ END:
 
 #include "MAC_API/itdsrc_mac.h"
 
-#define RF_INTERVAL_MS 500
+#define RF_INTERVAL_MS 333
 
 struct ma_dev *dev;
-
-char data[100];
-uint16_t data_length;
 
 static bool done;
 static bool rip;
@@ -348,7 +345,28 @@ static uint8_t mac_addr[6];
 
 void indication_cb(const struct ma_unitdata_indication *indication)
 {
-	//printf("Status indication: %u.\n", indication->transmission_status);
+	// stop when device disconnection is detected
+	if (indication->reception_status == 32) {
+		printf("Indication: Device disconnected!\n");
+		return;
+	}
+
+	
+	if (indication->reception_status == 0) {
+		if(data_length != sizeof(Coor)){
+			printf("Indication: Invalid data length!\n");
+			return;
+		}
+		uint8_t source_address[6];
+		uint8_t destination_address[6];
+		uint8_t reception_status;
+		uint8_t priority;
+		uint8_t service_class;
+
+		Coor * coor = data;
+		int id = (((int)source_address[2])<<(3*8)) || (((int)source_address[3])<<(2*8)) || (((int)source_address[4])<<(8)) || ((int)source_address[5]);
+		RoadView_update_Coor(id,coor);
+	}
 }
 
 void status_indication_cb(const struct ma_unitdata_status_indication *indication)
@@ -358,7 +376,7 @@ void status_indication_cb(const struct ma_unitdata_status_indication *indication
 
 void xstatus_indication_cb(const struct ma_unitdatax_status_indication *indication)
 {
-	// TODO receive
+	printf("Status indication: %u.\n", indication->transmission_status);
 }
 
 void startRF(void * arg){
@@ -385,9 +403,11 @@ void startRF(void * arg){
 	mac_addr[5] = (uint8_t) tid;
 		
 		
-	while(1){
+	uint16_t data_length = sizeof(Coor);
+	char * data;
 	
-		// TODO make data
+	while(1){
+		data = (char*)RoadView_get_myCoor(); // return Coor *
 	
 		retval = ma_unitdatax_request(dev, mac_addr,
 				mac_addr1, (uint8_t *) data, (uint16_t) data_length, 0, 0, 0, (uint8_t)tmodulation, (uint8_t)tpower, 0);

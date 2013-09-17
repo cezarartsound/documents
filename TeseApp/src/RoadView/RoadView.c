@@ -303,6 +303,10 @@ void RoadView_updateCoor(int vehicle_id,Coor * c){
 	RoadView_update(vehicle_id, c->x, c->y, c->vel, c->asimuth);
 }
 
+inline Coor * RoadView_get_myCoor(){
+	return &my_coor;
+}
+
 void RoadView_update(int vehicle_id, int x_cm, int y_cm, int vel, unsigned int angle){
 	pthread_mutex_lock(&mutex);
 	

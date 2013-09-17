@@ -85,6 +85,7 @@ void RoadView_updateCoor(int vehicle_id,Coor * c);
 void RoadView_update_myCoor(Coor * c);
 void RoadView_update(int vehicle_id, int x_cm, int y_cm, int vel, unsigned int angle);
 void RoadView_update_my(int x_cm, int y_cm, int vel, unsigned int angle);
+Coor * RoadView_get_myCoor();
 
 bool RoadView_caution(Vehicle * v);
 
