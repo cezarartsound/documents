@@ -233,7 +233,7 @@ void moveCars(Coor * origin, bool my){
 			if(i+1 == my_car_id){
 				if(my) RoadView_update_myCoor(tracks[i]->coor);
 			}else
-				RoadView_updateCoor(i,tracks[i]->coor);
+				RoadView_update_Coor(i,tracks[i]->coor);
 			tracks[i] = tracks[i]->next;
 		}
 		sleep(1);
@@ -337,10 +337,6 @@ END:
 
 struct ma_dev *dev;
 
-static bool done;
-static bool rip;
-int rx_good;
-static bool tip;
 static uint8_t mac_addr[6];
 
 void indication_cb(const struct ma_unitdata_indication *indication)
@@ -353,18 +349,13 @@ void indication_cb(const struct ma_unitdata_indication *indication)
 
 	
 	if (indication->reception_status == 0) {
-		if(data_length != sizeof(Coor)){
+		if(indication->data_length != sizeof(Coor)){
 			printf("Indication: Invalid data length!\n");
 			return;
 		}
-		uint8_t source_address[6];
-		uint8_t destination_address[6];
-		uint8_t reception_status;
-		uint8_t priority;
-		uint8_t service_class;
 
-		Coor * coor = data;
-		int id = (((int)source_address[2])<<(3*8)) || (((int)source_address[3])<<(2*8)) || (((int)source_address[4])<<(8)) || ((int)source_address[5]);
+		Coor * coor = (Coor*)(indication->data);
+		int id = (((int)indication->source_address[2])<<(3*8)) || (((int)indication->source_address[3])<<(2*8)) || (((int)indication->source_address[4])<<(8)) || ((int)indication->source_address[5]);
 		RoadView_update_Coor(id,coor);
 	}
 }
@@ -379,7 +370,7 @@ void xstatus_indication_cb(const struct ma_unitdatax_status_indication *indicati
 	printf("Status indication: %u.\n", indication->transmission_status);
 }
 
-void startRF(void * arg){
+void* startRF(void * arg){
 	unsigned int tid = (((unsigned int)arg) >> 16) & 255;
 	unsigned int tpower = (((unsigned int)arg) >> 8) & 255;
 	unsigned int tmodulation = ((unsigned int)arg) & 255;
@@ -394,7 +385,6 @@ void startRF(void * arg){
 	mac_addr1[4] = 255;
 	mac_addr1[5] = 255;
 
-	uint8_t mac_addr[6];
 	mac_addr[0] = 0;
 	mac_addr[1] = 0;
 	mac_addr[2] = 0;
@@ -406,7 +396,7 @@ void startRF(void * arg){
 	uint16_t data_length = sizeof(Coor);
 	char * data;
 	
-	while(1){
+	while(exitProgram!=true){
 		data = (char*)RoadView_get_myCoor(); // return Coor *
 	
 		retval = ma_unitdatax_request(dev, mac_addr,
@@ -417,6 +407,8 @@ void startRF(void * arg){
 		}
 		usleep(RF_INTERVAL_MS*1000);
 	}
+
+	return 0;
 }
 
 /* -------RX END----------------------------------------- */

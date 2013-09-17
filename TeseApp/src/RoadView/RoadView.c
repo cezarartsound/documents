@@ -298,7 +298,7 @@ void RoadView_update_myCoor(Coor * c){
 	RoadView_update_my( c->x, c->y, c->vel, c->asimuth);
 }
 
-void RoadView_updateCoor(int vehicle_id,Coor * c){
+void RoadView_update_Coor(int vehicle_id,Coor * c){
 	Coor_utmCalc(c);
 	RoadView_update(vehicle_id, c->x, c->y, c->vel, c->asimuth);
 }

@@ -81,7 +81,7 @@ void RoadView_drawCurves();
 
 void RoadView_delete(int vehicle_id);
 
-void RoadView_updateCoor(int vehicle_id,Coor * c);
+void RoadView_update_Coor(int vehicle_id,Coor * c);
 void RoadView_update_myCoor(Coor * c);
 void RoadView_update(int vehicle_id, int x_cm, int y_cm, int vel, unsigned int angle);
 void RoadView_update_my(int x_cm, int y_cm, int vel, unsigned int angle);

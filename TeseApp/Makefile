@@ -7,7 +7,7 @@ MAIN_OUT = build/App
 FB_LIB = -Lbuild -lFB -ljpeg -lpng -lncurses -lrt
 LIBS = -lpthread $(FB_LIB) -lm
 
-VPATH = src:src/so_tcplib:src/NetworkLayer:src/RoadView:src/libFabio/event/:src/GPS:src/GPS/SerialPort:src/libFabio/input/:src/libFabio/widget:src/MAC_API/build/:build/:objects/
+VPATH = src:src/so_tcplib:src/NetworkLayer:src/RoadView:src/libFabio/event/:src/GPS:src/GPS/SerialPort:src/libFabio/input/:src/libFabio/widget:build/:objects/
 
 FBLIB_PATH = src/libFB-0.2.4
 FBLIB = libFB.a
