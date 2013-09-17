@@ -365,6 +365,8 @@ void startRF(void * arg){
 	unsigned int tid = (((unsigned int)arg) >> 16) & 255;
 	unsigned int tpower = (((unsigned int)arg) >> 8) & 255;
 	unsigned int tmodulation = ((unsigned int)arg) & 255;
+
+	int retval;	
 	
 	uint8_t mac_addr1[6];
 	mac_addr1[0] = 255;
