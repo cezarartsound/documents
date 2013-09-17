@@ -569,7 +569,7 @@ int main (int argc, char **argv){
 	    }
 	} while (optch != -1);
 
-	if((port == -1 && filer == -1) || (port != -1 && filer != -1) || tid != -1){
+	if((port == -1 && filer == -1 && tid == -1) || (port != -1 && filer != -1)){
 		fprintf(stderr, "Port, filename or transmission id must be indicated.\n");
 		print_usage();
 		return -1;

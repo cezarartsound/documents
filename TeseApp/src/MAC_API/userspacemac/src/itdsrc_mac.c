@@ -99,7 +99,7 @@ int ma_unitdata_request(
 	assert(data != NULL);
 
 	if (dev->tip) {
-		fprintf(stderr, "Transmission in progress.\n");
+		printf("Transmission in progress.\n");
 		return -1;
 	}
 
@@ -142,7 +142,7 @@ int ma_unitdatax_request(
 	assert(data != NULL);
 
 	if (dev->tip) {
-		fprintf(stderr, "Transmission in progress.\n");
+		printf("Transmission in progress.\n");
 		return -1;
 	}
 
