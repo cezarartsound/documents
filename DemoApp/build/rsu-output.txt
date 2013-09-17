@@ -1,0 +1,106 @@
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (1) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(0) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:bookie:423: tx requested (1)
+DEBUG - src/itdsrc_daemon.c:bookie:438: tx (1) just ended
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(0) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (1) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:bookie:423: tx requested (1)
+DEBUG - src/itdsrc_daemon.c:bookie:438: tx (1) just ended
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(2) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (0) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(0) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:bookie:408: discard tx (0) succeeded
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (1) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:bookie:423: tx requested (1)
+DEBUG - src/itdsrc_daemon.c:bookie:438: tx (1) just ended
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(2) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(0) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (0) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:bookie:408: discard tx (0) succeeded
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (1) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:bookie:423: tx requested (1)
+DEBUG - src/itdsrc_daemon.c:bookie:438: tx (1) just ended
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(2) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(0) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (0) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:bookie:408: discard tx (0) succeeded
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (1) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:bookie:423: tx requested (1)
+DEBUG - src/itdsrc_daemon.c:bookie:438: tx (1) just ended
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(2) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (0) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(0) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:bookie:408: discard tx (0) succeeded
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (1) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:bookie:423: tx requested (1)
+DEBUG - src/itdsrc_daemon.c:bookie:438: tx (1) just ended
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(2) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(0) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (0) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:bookie:408: discard tx (0) succeeded
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (1) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:bookie:423: tx requested (1)
+DEBUG - src/itdsrc_daemon.c:bookie:438: tx (1) just ended
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(2) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (0) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(0) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:bookie:408: discard tx (0) succeeded
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (1) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:bookie:423: tx requested (1)
+DEBUG - src/itdsrc_daemon.c:bookie:438: tx (1) just ended
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(2) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(0) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (0) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:bookie:408: discard tx (0) succeeded
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (1) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:bookie:423: tx requested (1)
+DEBUG - src/itdsrc_daemon.c:bookie:438: tx (1) just ended
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(2) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(0) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (0) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:bookie:408: discard tx (0) succeeded
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (1) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:bookie:423: tx requested (1)
+DEBUG - src/itdsrc_daemon.c:bookie:438: tx (1) just ended
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(2) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (0) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(0) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:bookie:408: discard tx (0) succeeded
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (1) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:bookie:423: tx requested (1)
+DEBUG - src/itdsrc_daemon.c:bookie:438: tx (1) just ended
+DEBUG - src/itdsrc_daemon.c:writer:322: sent new request(2) to device
+DEBUG - src/itdsrc_daemon.c:writer:291: waiting for writer queue
+DEBUG - src/itdsrc_daemon.c:bookie:374: operation (0) just been forwarded to lower layers
+DEBUG - src/itdsrc_daemon.c:bookie:408: discard tx (0) succeeded
+DEBUG - src/itdsrc_daemon.c:signal_handler:261: canceling all threads...
+DEBUG - src/itdsrc_daemon.c:signal_handler:264: writer thread canceled
+DEBUG - src/itdsrc_daemon.c:signal_handler:266: bookie thread canceled
+DEBUG - src/itdsrc_daemon.c:signal_handler:268: all threads canceled
+DEBUG - src/itdsrc_daemon.c:main:203: joined writer thread
+DEBUG - src/itdsrc_daemon.c:main:205: joined bookie thread
+DEBUG - src/itdsrc_daemon.c:main:208: claening up
+DEBUG - src/itdsrc_daemon.c:main:231: /itdsrc_writer_0 queue unlinked
+DEBUG - src/itdsrc_daemon.c:main:239: /itdsrc_reader_0 queue unlinked
+DEBUG - src/itdsrc_daemon.c:main:247: /itdsrc_bookie_0 queue unlinked
