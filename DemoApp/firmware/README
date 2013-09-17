@@ -1,0 +1,17 @@
+fxload-usb is a simple tool to load firmware to a FX2LP device, using libusbx.
+The firmware must be provided in intel hex format.
+
+Prerequisites
+
+In order to compile the loader, you need libusb installed, including the header files. In Ubuntu this would be the libusb-dev and libusb packages.
+
+The rules file automatically loads the usb controller firmware on a system that uses UDEV to manage the devices (most modern linux distros do that).
+
+To compile:
+	make
+
+To install:
+	make install ("make DESTDIR=/some/where/ install" to install on a root different from /)
+
+To uninstall:
+	make uninstall (DESTDIR is also valid here)
