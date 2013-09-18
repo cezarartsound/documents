@@ -333,7 +333,7 @@ END:
 
 #include "MAC_API/itdsrc_mac.h"
 
-#define RF_INTERVAL_MS 333
+#define RF_INTERVAL_MS 2000 /*333*/
 
 struct ma_dev *dev;
 
@@ -359,7 +359,7 @@ void indication_cb(const struct ma_unitdata_indication *indication)
 		int id = (((int)indication->source_address[2])<<(3*8)) || (((int)indication->source_address[3])<<(2*8)) || (((int)indication->source_address[4])<<(8)) || ((int)indication->source_address[5]);
 
 
-		printf("Received: vehicle %d at %d,%d\n",id,coor->lat,coor->lon);
+		printf("Received: vehicle %f at %f,%f (%d)\n",id,coor->lat,coor->lon, indication->data_length);
 	
 		RoadView_update_Coor(id,coor);
 	}
@@ -379,6 +379,8 @@ void* startRF(void * arg){
 	unsigned int tid = (((unsigned int)arg) >> 16) & 255;
 	unsigned int tpower = (((unsigned int)arg) >> 8) & 255;
 	unsigned int tmodulation = ((unsigned int)arg) & 255;
+	
+	printf("Start RF transmission: tid=%u, power=%u, mod=%u\n",tid,tpower,tmodulation);
 
 	int retval;	
 	
@@ -405,7 +407,9 @@ void* startRF(void * arg){
 	while(exitProgram!=true){
 		coor = RoadView_get_myCoor(); // return Coor *
 		data = (char*) coor;
-
+		
+		coor->lat = 53.35;
+		coor->lon = 45.54;
 		printf("Sending: vehicle %d at %d, %d\n",tid,coor->lat,coor->lon);	
 	
 		retval = ma_unitdatax_request(dev, mac_addr,
