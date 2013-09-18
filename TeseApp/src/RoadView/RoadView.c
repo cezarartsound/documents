@@ -295,11 +295,13 @@ void RoadView_update_my(int x_cm,int y_cm, int vel, unsigned int angle){
 void RoadView_update_myCoor(Coor * c){
 	memcpy(&my_coor,c,sizeof(Coor));
 	Coor_utmCalc(c);
+//	printf("myUTM (%d,%d)\n",c->x,c->y);
 	RoadView_update_my( c->x, c->y, c->vel, c->asimuth);
 }
 
 void RoadView_update_Coor(int vehicle_id,Coor * c){
 	Coor_utmCalc(c);
+//	printf("UTM (%d,%d)\n",c->x,c->y);
 	RoadView_update(vehicle_id, c->x, c->y, c->vel, c->asimuth);
 }
 

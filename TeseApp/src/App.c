@@ -62,6 +62,8 @@ double byteArray2double(unsigned char * array){
 	return d;
 }
 
+void RF_send();
+
 void* receiveData(void *v){
 	int sock = (int)(intptr_t)v;
 	int exit = 0;
@@ -72,7 +74,8 @@ void* receiveData(void *v){
 	}
 	printf("Ligacao estabelecida!\n");
 
-	unsigned char buff[50];
+	unsigned char buff [100];
+	Coor coor;
 
 	while(!exit && !exitProgram){
 		if(read(sock,buff,1) == 0){ exit = 1; continue;}
@@ -81,11 +84,22 @@ void* receiveData(void *v){
 			exit = 1;
 			exitProgram = true;
 		}else{
-			if(read(sock,buff+1,17) == 0){ exit = 1; continue;}
+			if(read(sock,buff+1,33) == 0){ exit = 1; continue;}
+			
+			memcpy(&coor,buff+2,sizeof(Coor));	
+			coor.calc = GEO;
+			coor.origin = NULL;
+
 			if(buff[1] == 1){
-				RoadView_update_my(byteArray2int(buff+2),byteArray2int(buff+6),byteArray2int(buff+10),byteArray2int(buff+14));
+				//RoadView_update_my(byteArray2int(buff+2),byteArray2int(buff+6),byteArray2int(buff+10),byteArray2int(buff+14));
+				if(!noVehicle)
+					RoadView_update_myCoor(&coor);
 			}else{
-				RoadView_update(buff[0],byteArray2int(buff+2),byteArray2int(buff+6),byteArray2int(buff+10),byteArray2int(buff+14));
+				//RoadView_update(buff[0],byteArray2int(buff+2),byteArray2int(buff+6),byteArray2int(buff+10),byteArray2int(buff+14));
+				if(!noVehicle)
+					RoadView_update_Coor(buff[0],&coor);
+				else
+					RF_send(buff[0],&coor);
 			}
 		}
 	}
@@ -138,7 +152,7 @@ int showInfo(){
 
 		sprintf(str,"%s - %s", ifr[i].ifr_name, ip);
 		printf("%s\n",str);
-		if(!noVehicle)
+		if(noVehicle==false)
 			FB_printf(350+100*(i-1), ymax - 40, FB_makecol(255,255,255,0),str);
 	}
 
@@ -241,9 +255,12 @@ void moveCars(Coor * origin, bool my){
 		
 		for(i=0;tracks[i]!=0;i++){
 			if(i+1 == my_car_id){
-				if(my) RoadView_update_myCoor(tracks[i]->coor);
-			}else
-				RoadView_update_Coor(i,tracks[i]->coor);
+				if(!noVehicle && my) RoadView_update_myCoor(tracks[i]->coor);
+			}else 
+				if(!noVehicle)
+					RoadView_update_Coor(i,tracks[i]->coor);
+				else 
+					RF_send(i,tracks[i]->coor);
 			tracks[i] = tracks[i]->next;
 		}
 		sleep(1);
@@ -351,6 +368,10 @@ END:
 struct ma_dev *dev;
 
 static uint8_t mac_addr[6];
+static uint8_t mac_addr1[6];
+
+static int transmission_power;
+static int transmission_modulation;
 
 void indication_cb(const struct ma_unitdata_indication *indication)
 {
@@ -391,6 +412,26 @@ void xstatus_indication_cb(const struct ma_unitdatax_status_indication *indicati
 	printf("Status indication: %u.\n", indication->transmission_status);
 }
 
+void RF_send(int id, Coor * c){
+	mac_addr[5] = (uint8_t) id;
+		
+	uint16_t data_length = sizeof(Coor);
+	char * data;
+
+	data = (char*) c;
+		
+	printf("Sending: vehicle %d at %f, %f\n",id,c->lat,c->lon);	
+	
+/*	int retval = ma_unitdatax_request(dev, mac_addr,
+		mac_addr1, (uint8_t *) data, (uint16_t) data_length, 0, 0, 0,
+		 (uint8_t)transmission_modulation, (uint8_t)transmission_power, 0);
+
+	if (retval != 0) {
+		printf("ma_unitdatax_request failed: %s\n", strerror(retval));
+	}
+*/
+}
+
 void* startRF(void * arg){
 	unsigned int tid = (((unsigned int)arg) >> 16) & 255;
 	unsigned int tpower = (((unsigned int)arg) >> 8) & 255;
@@ -400,7 +441,6 @@ void* startRF(void * arg){
 
 	int retval;	
 	
-	uint8_t mac_addr1[6];
 	mac_addr1[0] = 255;
 	mac_addr1[1] = 255;
 	mac_addr1[2] = 255;
@@ -420,11 +460,11 @@ void* startRF(void * arg){
 	char * data;
 	Coor* coor;
 
-	while(exitProgram!=true){
-		coor = RoadView_get_myCoor(); // return Coor *
+	while(exitProgram!=true && !noVehicle){
+		coor = RoadView_get_myCoor();
 		data = (char*) coor;
 		
-		printf("Sending: vehicle %d at %f, %f\n",tid,coor->lat,coor->lon);	
+//		printf("Sending: vehicle %d at %f, %f\n",tid,coor->lat,coor->lon);	
 	
 		retval = ma_unitdatax_request(dev, mac_addr,
 				mac_addr1, (uint8_t *) data, (uint16_t) data_length, 0, 0, 0, (uint8_t)tmodulation, (uint8_t)tpower, 0);
@@ -647,7 +687,8 @@ int main (int argc, char **argv){
 			fprintf(stderr, "ERROR: failed to initialize mac layer: %s.\n", strerror(retval));
 			return -1;
 		}
-		pthread_create(&tid_app, &tattr_app, startRF,(void*)(tid<<16 | tpower<<8 | tmodulation));
+		if(!noVehicle)
+			pthread_create(&tid_app, &tattr_app, startRF,(void*)(tid<<16 | tpower<<8 | tmodulation));
 		
 	}else {
 		fprintf(stderr, "Port, filename or transmission id must be indicated.\n");
