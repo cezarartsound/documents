@@ -355,7 +355,12 @@ void indication_cb(const struct ma_unitdata_indication *indication)
 		}
 
 		Coor * coor = (Coor*)(indication->data);
+		
 		int id = (((int)indication->source_address[2])<<(3*8)) || (((int)indication->source_address[3])<<(2*8)) || (((int)indication->source_address[4])<<(8)) || ((int)indication->source_address[5]);
+
+
+		printf("Received: vehicle %d at %d,%d\n",id,coor->lat,coor->lon);
+	
 		RoadView_update_Coor(id,coor);
 	}
 }
@@ -395,9 +400,13 @@ void* startRF(void * arg){
 		
 	uint16_t data_length = sizeof(Coor);
 	char * data;
-	
+	Coor* coor;
+
 	while(exitProgram!=true){
-		data = (char*)RoadView_get_myCoor(); // return Coor *
+		coor = RoadView_get_myCoor(); // return Coor *
+		data = (char*) coor;
+
+		printf("Sending: vehicle %d at %d, %d\n",tid,coor->lat,coor->lon);	
 	
 		retval = ma_unitdatax_request(dev, mac_addr,
 				mac_addr1, (uint8_t *) data, (uint16_t) data_length, 0, 0, 0, (uint8_t)tmodulation, (uint8_t)tpower, 0);
