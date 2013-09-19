@@ -692,8 +692,8 @@ int main (int argc, char **argv){
 			fprintf(stderr, "ERROR: failed to initialize mac layer: %s.\n", strerror(retval));
 			return -1;
 		}
-		if(!noVehicle)
-			pthread_create(&RFtid_app, &RFtattr_app, startRF,(void*)(tid<<16 | tpower<<8 | tmodulation));
+		//if(!noVehicle)
+		pthread_create(&RFtid_app, &RFtattr_app, startRF,(void*)(tid<<16 | tpower<<8 | tmodulation));
 		
 	}
 
