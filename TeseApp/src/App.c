@@ -365,6 +365,9 @@ END:
 
 #define RF_INTERVAL_MS 2000 /*333*/
 
+static pthread_attr_t RFtattr_app;
+static pthread_t RFtid_app;
+
 struct ma_dev *dev;
 
 static uint8_t mac_addr[6];
@@ -422,14 +425,14 @@ void RF_send(int id, Coor * c){
 		
 	printf("Sending: vehicle %d at %f, %f\n",id,c->lat,c->lon);	
 	
-/*	int retval = ma_unitdatax_request(dev, mac_addr,
+	int retval = ma_unitdatax_request(dev, mac_addr,
 		mac_addr1, (uint8_t *) data, (uint16_t) data_length, 0, 0, 0,
 		 (uint8_t)transmission_modulation, (uint8_t)transmission_power, 0);
 
 	if (retval != 0) {
 		printf("ma_unitdatax_request failed: %s\n", strerror(retval));
 	}
-*/
+
 }
 
 void* startRF(void * arg){
@@ -680,7 +683,9 @@ int main (int argc, char **argv){
 			filename[0] = true;
 		pthread_create(&tid_app, &tattr_app, startFileRead,(void*)filename);
 		
-	}else if(tid != -1){
+	} 
+	
+	if(tid != -1){
 	
 		int retval = ma_init(0, &dev, &indication_cb, &status_indication_cb, &xstatus_indication_cb);
 		if (retval != 0) {
@@ -688,12 +693,8 @@ int main (int argc, char **argv){
 			return -1;
 		}
 		if(!noVehicle)
-			pthread_create(&tid_app, &tattr_app, startRF,(void*)(tid<<16 | tpower<<8 | tmodulation));
+			pthread_create(&RFtid_app, &RFtattr_app, startRF,(void*)(tid<<16 | tpower<<8 | tmodulation));
 		
-	}else {
-		fprintf(stderr, "Port, filename or transmission id must be indicated.\n");
-		print_usage();
-		return -1;
 	}
 
 	if(serialr != -1)
