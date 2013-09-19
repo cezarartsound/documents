@@ -94,6 +94,8 @@ void* receiveData(void *v){
 				//RoadView_update_my(byteArray2int(buff+2),byteArray2int(buff+6),byteArray2int(buff+10),byteArray2int(buff+14));
 				if(!noVehicle)
 					RoadView_update_myCoor(&coor);
+				else
+					RF_send(0,&coor);
 			}else{
 				//RoadView_update(buff[0],byteArray2int(buff+2),byteArray2int(buff+6),byteArray2int(buff+10),byteArray2int(buff+14));
 				if(!noVehicle)
@@ -401,7 +403,10 @@ void indication_cb(const struct ma_unitdata_indication *indication)
 
 		printf("Received: vehicle %d at %f,%f\n",id,coor->lat,coor->lon);
 		if(!noVehicle)	
-			RoadView_update_Coor(id,coor);
+			if(id==0)
+				RoadView_update_myCoor(coor);
+			else
+				RoadView_update_Coor(id,coor);
 	}
 }
 
@@ -419,7 +424,7 @@ void RF_send(int id, Coor * c){
 	mac_addr[5] = (uint8_t) id;
 		
 	uint16_t data_length = sizeof(Coor);
-	char * data;
+	char *  data;
 
 	data = (char*) c;
 		
@@ -437,10 +442,10 @@ void RF_send(int id, Coor * c){
 
 void* startRF(void * arg){
 	unsigned int tid = (((unsigned int)arg) >> 16) & 255;
-	unsigned int tpower = (((unsigned int)arg) >> 8) & 255;
-	unsigned int tmodulation = ((unsigned int)arg) & 255;
+	transmission_power = (((unsigned int)arg) >> 8) & 255;
+	transmission_modulation = ((unsigned int)arg) & 255;
 	
-	printf("Start RF transmission: tid=%u, power=%u, mod=%u\n",tid,tpower,tmodulation);
+	printf("Start RF transmission: tid=%u, power=%u, mod=%u\n",tid,transmission_power,transmission_modulation);
 
 	int retval;	
 	
@@ -467,10 +472,11 @@ void* startRF(void * arg){
 		coor = RoadView_get_myCoor();
 		data = (char*) coor;
 		
-//		printf("Sending: vehicle %d at %f, %f\n",tid,coor->lat,coor->lon);	
+		printf("Sending my: vehicle %d at %f, %f\n",tid,coor->lat,coor->lon);	
 	
 		retval = ma_unitdatax_request(dev, mac_addr,
-				mac_addr1, (uint8_t *) data, (uint16_t) data_length, 0, 0, 0, (uint8_t)tmodulation, (uint8_t)tpower, 0);
+				mac_addr1, (uint8_t *) data, (uint16_t) data_length, 0, 0, 0, (uint8_t)transmission_modulation, (uint8_t)transmission_power, 0);
+
 
 		if (retval != 0) {
 			printf("ma_unitdatax_request failed: %s\n", strerror(retval));
