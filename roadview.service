@@ -1,0 +1,9 @@
+[Unit]
+Description=RoadSavety
+
+[Service]
+Type=oneshot
+ExecStart=/home/giest/documents/roadview
+
+[Install]
+WantedBy=reboot.target shutdown.target halt.target

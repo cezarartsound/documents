@@ -48,6 +48,8 @@ if [ "$MAC_NAME" != "" ]; then
 	cd $READY_PATH
 	
 	trap ctrl_c INT #catch ctrl+c
+	
+	clear	
 
 	if [ $(cat /etc/hostname) = 'giestpi1' ]; then
 		$APP_PROGRAM $OBU_COMMANDS > /dev/null
@@ -57,7 +59,10 @@ if [ "$MAC_NAME" != "" ]; then
 	
 	kill -INT $MAC_PID #send ctrl+c
 	echo $PRINT_PRE'End in safe!'
+
+	reboot
 else
 	echo $PRINT_PRE'Error running MAC program!' 
 fi
+
 
