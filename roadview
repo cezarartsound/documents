@@ -1,22 +1,36 @@
 #!/bin/bash
 
+
+### USER CONFIG
+
+
 DIR=/home/giest/documents/TeseApp
 
-#MAC_PROGRAM=$DIR'/build/itdsrc_daemon'
-MAC_PROGRAM=$DIR'/build/Hello'
+MAC_PROGRAM=$DIR'/build/itdsrc_daemon'
+#MAC_PROGRAM=$DIR'/build/Hello'
 READY_PATH=$DIR'/ready'
 APP_PROGRAM=$DIR'/build/App'
 
 #RSU_COMMANDS=' -p 1234 -t 0 -P 50 -n' #total system
 RSU_COMMANDS=' -f '$READY_PATH'/tracks/bairro_cruz2.2.tck -t 0 -P 50 -n' #receive by file
 
-#OBU_COMMANDS=' -t 1 -P 50 -i /dev/input/event0 -c' #total system
-#OBU_COMMANDS=' -f '$READY_PATH'/track/bairro_cruz2.2.tck -g /dev/ttyUSB0' #only OBU test
-OBU_COMMANDS=' -f '$READY_PATH'/track/bairro_cruz2.2.tck' #only OBU test without GPS
+
+OBU_INPUT=' -c -i /dev/input/event2 '
+OBU_RX=' -t 1 -P 50 '
+OBU_FILE=' -f '$READY_PATH'/tracks/bairro_cruz2.2.tck '
+OBU_GPS=' -g /dev/ttyUSB0 '
+#OBU_COMMANDS=$OBU_INPUT$OBU_RX$OBU_GPS #total system
+#OBU_COMMANDS=$OBU_INPUT$OBU_FILE$OBU_GPS #only OBU test
+OBU_COMMANDS=$OBU_FILE$OBU_INPUT #OBU on lab test
 
 
 
 
+###### CORE
+
+function ctrl_c(){
+	echo $PRINT_PRE'Ctrl+C catched'
+}
 
 
 PRINT_PRE='roadview: '
@@ -28,19 +42,22 @@ sleep 2
 MAC_PID=$!
 MAC_NAME=$(ps -p $MAC_PID -o comm=)
 
-if [ -n $MAC_NAME ]; then
+if [ "$MAC_NAME" != "" ]; then
 	echo $PRINT_PRE'Running '$MAC_NAME', with PID '$MAC_PID' on machine '$(cat /etc/hostname)
 
 	cd $READY_PATH
+	
+	trap ctrl_c INT #catch ctrl+c
 
 	if [ $(cat /etc/hostname) = 'giestpi1' ]; then
-		$APP_PROGRAM $OBU_COMMANDS
+		$APP_PROGRAM $OBU_COMMANDS > /dev/null
 	else
 		$APP_PROGRAM $RSU_COMMANDS
 	fi
 	
-	kill $MAC_PID
+	kill -INT $MAC_PID #send ctrl+c
 	echo $PRINT_PRE'End in safe!'
 else
 	echo $PRINT_PRE'Error running MAC program!' 
 fi
+
