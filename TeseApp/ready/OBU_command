@@ -1,0 +1,1 @@
+sudo ../build/App -f tracks/bairro_cruz2.2.tck -c -i /dev/input/event3
