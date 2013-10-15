@@ -1,0 +1,46 @@
+#!/bin/bash
+
+DIR=/home/giest/documents/TeseApp
+
+#MAC_PROGRAM=$DIR'/build/itdsrc_daemon'
+MAC_PROGRAM=$DIR'/build/Hello'
+READY_PATH=$DIR'/ready'
+APP_PROGRAM=$DIR'/build/App'
+
+#RSU_COMMANDS=' -p 1234 -t 0 -P 50 -n' #total system
+RSU_COMMANDS=' -f '$READY_PATH'/tracks/bairro_cruz2.2.tck -t 0 -P 50 -n' #receive by file
+
+#OBU_COMMANDS=' -t 1 -P 50 -i /dev/input/event0 -c' #total system
+#OBU_COMMANDS=' -f '$READY_PATH'/track/bairro_cruz2.2.tck -g /dev/ttyUSB0' #only OBU test
+OBU_COMMANDS=' -f '$READY_PATH'/track/bairro_cruz2.2.tck' #only OBU test without GPS
+
+
+
+
+
+
+PRINT_PRE='roadview: '
+
+$MAC_PROGRAM &
+
+sleep 2
+
+MAC_PID=$!
+MAC_NAME=$(ps -p $MAC_PID -o comm=)
+
+if [ -n $MAC_NAME ]; then
+	echo $PRINT_PRE'Running '$MAC_NAME', with PID '$MAC_PID' on machine '$(cat /etc/hostname)
+
+	cd $READY_PATH
+
+	if [ $(cat /etc/hostname) = 'giestpi1' ]; then
+		$APP_PROGRAM $OBU_COMMANDS
+	else
+		$APP_PROGRAM $RSU_COMMANDS
+	fi
+	
+	kill $MAC_PID
+	echo $PRINT_PRE'End in safe!'
+else
+	echo $PRINT_PRE'Error running MAC program!' 
+fi
