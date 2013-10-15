@@ -33,6 +33,10 @@
 
 #include "libFB-0.2.4/FBlib.h"
 
+#include "libFabio/event/event.h"
+#include "libFabio/widget/widget.h"
+#include "libFabio/input/input.h"
+
 #include "RoadView/RoadView.h"
 #include "Coor.h"
 
@@ -517,6 +521,11 @@ void wait_input(){
 
 	while(!appExit){
 		switch(c=getchar()){
+			case 'c':
+				RoadView_pause();
+				input_calibration();
+				RoadView_return();
+				break;
 			case 'e':
 				appExit = true;
 				break;
@@ -584,7 +593,11 @@ void print_usage(void)
 		"  sudo ./App -p 1234\n"
 		"  sudo ./App -t -p 1234\n");
 }
-
+void calibration(){
+	RoadView_pause();
+	input_calibration();
+	RoadView_return();
+}
 int main (int argc, char **argv){
 	int optch;
 	unsigned int port = -1, tpower = -1, tmodulation = -1;
@@ -597,7 +610,7 @@ int main (int argc, char **argv){
 	int filer = -1, serialr = -1;
 
 	do {
-	    optch = getopt(argc, argv, "hnc:p:f:g:i:t:P:M:");
+	    optch = getopt(argc, argv, "hncp:f:g:i:t:P:M:");
 
 	    switch (optch) {
 	        case 'h':
@@ -671,13 +684,19 @@ int main (int argc, char **argv){
 		FB_getres(&xmax,&ymax);
 		printf("Resolution %dx%d\n",xmax,ymax);
 		FB_clear_screen (FB_makecol (0,0,0,0));
+
+		event_init();
+		input_init(inputdev);
+		if(input_cal) // dont work, i dont know why
+			input_calibration();
+		widget_init();
 	
-		RoadView_start(input_cal,inputdev);
+		RoadView_start();
 	}else{
 		noVehicle = true;
 		printf("Graphics disable\n");
 	}
-	
+
 	if(tid != -1){
 			
 		int retval = ma_init(0, &dev, &indication_cb, &status_indication_cb, &xstatus_indication_cb);

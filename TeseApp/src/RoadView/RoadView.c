@@ -15,7 +15,6 @@
 #include "../libFB-0.2.4/FBlib.h"
 #include "../libFabio/event/event.h"
 #include "../libFabio/widget/widget.h"
-#include "../libFabio/input/input.h"
 #include "RoadView.h"
 
 #define PI (4*atan(1))
@@ -41,6 +40,8 @@ static Coor my_coor;
 static bool warning;
 static BITMAP * warning_bmp;
 
+static bool UIpause;
+
 void printStatus(char*text){
 	FB_rectfill(10, ymax - 10, xmax , ymax - 40 ,FB_makecol(0,0,0,0));
 	FB_printf(20, ymax - 40, FB_makecol(0,255,0,0),text);
@@ -57,7 +58,8 @@ bool verifyY(int y){
 }
 
 void drawCar(Vehicle * v) {
-	
+	if(UIpause) return;
+
 	// meter a origem do plano a posicao do veiculo
 	int xx = v->pos->x - my_pos.x;
 	int yy = v->pos->y - my_pos.y;
@@ -129,6 +131,7 @@ void drawCar(Vehicle * v) {
 }
 
 void drawMark(int x1, int y1 , int r, FB_pixel color, char * str) {
+	if(UIpause) return;
 	
 	// meter a origem do plano a posicao do veiculo
 	int xx = x1 - my_pos.x;
@@ -154,6 +157,7 @@ void drawMark(int x1, int y1 , int r, FB_pixel color, char * str) {
 }
 
 void eraseCar(Vehicle * v ){
+	if(UIpause) return;
 	
 	// int color = FB_makecol(225,225,240,0); //deixar rasto
 	int color = BACKGROUND_COLOR;
@@ -274,6 +278,8 @@ void RoadView_update_my(int x_cm,int y_cm, int vel, unsigned int angle){
 	pthread_mutex_unlock(&mutex);
 
 	// actualizar o rectangulo do veiculo, pq pode ser destruido se outro veiculo for desenhado sobre ele	
+	if(UIpause) return;
+
 	int car_width_s2 = 3/meters_per_pixel/2;
 	int car_lenght_s2 = 5/meters_per_pixel/2;
 	int car_back = CAR_BACK_CM_VIEW/100.0/meters_per_pixel;
@@ -396,6 +402,14 @@ void RoadView_stop(){
 	pthread_mutex_unlock(&mutex);
 }
 
+void RoadView_pause(){
+	UIpause = true;
+}
+
+void RoadView_return(){
+	UIpause = false;
+}
+
 int RoadView_ZoomOut(){
 	meters_per_pixel *= 1.1;
 	RoadView_redraw();
@@ -408,20 +422,11 @@ int RoadView_ZoomIn(){
 	return (int)(meters_per_pixel * table_length.y);
 }
 
-void RoadView_start(bool input_cal, char * input_dev) {
-	
-	event_init();
-	
-	input_init(input_dev);
-
-	if(input_cal==true)
-		input_calibration();
-	
-	widget_init();
-	
+void RoadView_start() {
 	FB_getres(&xmax,&ymax);
 
 	warning = false;
+	UIpause = false;
 
 	my_pos.d = atan(1)*2;
 	my_pos.x = 0;
@@ -481,6 +486,8 @@ void RoadView_start(bool input_cal, char * input_dev) {
 
 void drawCurves();
 void RoadView_redraw(){
+	if(UIpause) return;
+	
 	FB_clear_screen(FB_makecol(0,0,0,0));
 
 	FB_rectfill(table_location.x-4, table_location.y+4,table_location.x + table_length.x+4,
@@ -619,6 +626,9 @@ bool safetyZones(Vehicle * v){
 
 void warning_clean(void * v){
 	warning = false;
+	
+	if(UIpause) return;
+
 	FB_rectfill(table_location.x+table_length.x+20,table_location.y-table_length.y,
 			xmax,table_location.y-table_length.y+warning_bmp->height+20,
 			FB_makecol(0,0,0,0));
@@ -627,6 +637,9 @@ void warning_clean(void * v){
 void warning_trow(char * str){
 	if(warning == false){
 		warning = true;
+	
+		if(UIpause) return;
+
 		FB_bitmapDraw(warning_bmp,table_location.x+table_length.x+20,table_location.y-table_length.y);
 		
 		FB_rectfill(table_location.x+table_length.x+20,table_location.y-table_length.y+warning_bmp->height+20,

@@ -24,7 +24,7 @@ OBJECTS = SerialPort.o GPS.o so_tcplib.o event.o input.o widget.o Coor.o RoadVie
 
 all: $(FBLIB) $(MAC_API) $(OBJECTS) 
 	$(CC) $(CFLAGS) -o $(MAIN_OUT) $(MAIN_IN) $(OBJECTS) $(MAC_API) $(LIBS)
-	rm -R -f $(OBJECTS) $(MAIN) $(MAC_API)
+#	rm -R -f $(OBJECTS) $(MAIN) $(MAC_API)
 
 $(FBLIB):
 	make -C $(FBLIB_PATH)

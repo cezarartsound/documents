@@ -14,7 +14,7 @@
 
 int main(){
 	struct input_event event;
-	FILE * fd = fopen("/dev/input/event1","r");
+	FILE * fd = fopen("/dev/input/event2","r");
 	char c;
 
 	printf("Boraa!\r\n");

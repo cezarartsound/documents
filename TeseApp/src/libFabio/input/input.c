@@ -8,8 +8,6 @@
 #include "input.h"
 #include "../vga.h"
 
-FILE * input_fd;
-
 static pthread_mutex_t* input_mutex;
 static pthread_attr_t tattr_input;
 static pthread_t tid_input;
@@ -26,9 +24,13 @@ static unsigned char inputstop;
 static bool input_initialized = false;
 
 void * input_routine(void * v){
+	FILE * input_fd = (FILE *)v;
+	
 	int i;
 
+	pthread_mutex_lock(input_mutex);
 	input_x = input_y = -1;
+	pthread_mutex_unlock(input_mutex);
 	
 	struct input_event event;
 	while(!inputstop){
@@ -48,13 +50,14 @@ void * input_routine(void * v){
 					pthread_mutex_unlock(input_mutex);
 				}
 			}
-		}
+		}else{ break;}
 	}
+	printf("Input thread finished!\n");
 	return 0;
 }
 
 void input_init(char * input_dev){
-	input_fd = fopen(input_dev,"r");
+	FILE * input_fd = fopen(input_dev,"r");
 
 	if(input_fd>0)
 		printf("Input on\r\n");
@@ -73,15 +76,15 @@ void input_init(char * input_dev){
 
 	inputstop = 0;
 
-	pthread_create(&tid_input, &tattr_input, input_routine,NULL);
+	pthread_create(&tid_input, &tattr_input, input_routine,(void*)input_fd);
 	printf("\nThread input created %d\n",(int)tid_input);
-
 	input_initialized = true;
 }
 
 void input_stop(){
 	input_initialized = false;
 	inputstop = 1;
+	free(input_mutex);
 	//TODO free all
 }
 
@@ -92,7 +95,7 @@ void input_flush(){
 	inputs_idx = 0;
 	input_x = input_y = -1;
 	pthread_mutex_unlock(input_mutex);
-	// pthread_yield(); // TODO: warnning i dont know why
+	//pthread_yield(); // TODO: warnning i dont know why
 }
 
 void input_get_next_point(Point * point){
@@ -102,7 +105,7 @@ void input_get_next_point(Point * point){
 	int i = inputs_idx;
 	input_x = input_y = -1;
 	pthread_mutex_unlock(input_mutex);
-	// pthread_yield(); // TODO: warnning i dont know why
+	//pthread_yield(); // TODO: warnning i dont know why
 
 	bool exit = 1;
 	while(exit){
@@ -114,7 +117,8 @@ void input_get_next_point(Point * point){
 			exit = 0;
 		}
 		pthread_mutex_unlock(input_mutex);
-		// pthread_yield(); // TODO: warnning i dont know why
+		usleep(50000);
+		//pthread_yield(); // TODO: warnning i dont know why
 	}
 }
 
@@ -138,6 +142,7 @@ void input_calibration(){
 	VGA_drawText("Clique aqui!", 65,70,COLOR_RED);
 
 	input_get_next_point(&p1);
+
 	printf("(%d,%d)\r\n",p1.x,p1.y);
 
 
